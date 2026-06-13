@@ -372,16 +372,19 @@
         orderRef: params.get('ref') || '', lang: currentLang
       };
       try {
-        const res = await fetch(GAS_URL, { method:'POST', body: JSON.stringify(payload) });
-        const data = await res.json();
-        if (data.status === 'ok') {
-          document.getElementById('formCard').innerHTML = `
-            <div style="text-align:center;padding:32px 16px">
-              <div style="font-size:64px;margin-bottom:16px">✅</div>
-              <div style="font-size:20px;font-weight:800;color:#1a9a5c;margin-bottom:12px">${t['success-title']}</div>
-              <div style="font-size:14px;color:#997755;line-height:1.8;white-space:pre-line">${t['success-body']}</div>
-            </div>`;
-        } else { throw new Error(); }
+        // GASはCORSを返せないのでno-corsで送信、レスポンスは読めないが送信は成功する
+        await fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'no-cors',
+          body: JSON.stringify(payload)
+        });
+        // no-corsの場合レスポンスが読めないので送信後は成功とみなす
+        document.getElementById('formCard').innerHTML = `
+          <div style="text-align:center;padding:32px 16px">
+            <div style="font-size:64px;margin-bottom:16px">✅</div>
+            <div style="font-size:20px;font-weight:800;color:#1a9a5c;margin-bottom:12px">${t['success-title']}</div>
+            <div style="font-size:14px;color:#997755;line-height:1.8;white-space:pre-line">${t['success-body']}</div>
+          </div>`;
       } catch {
         showError(t['err-send']);
         btn.disabled = false;
