@@ -1,22 +1,21 @@
 <!DOCTYPE html>
-<html lang="ja">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>スリップ管理 | サイトウフーズ</title>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Slip Management | Saito Foods</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+Thai:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
   :root {
     --bg: #f4f6fb; --surface: #ffffff; --surface2: #f0f2f7; --border: #e2e6ef;
     --accent: #3b6ef5; --accent-dim: rgba(59,110,245,0.1);
-    --warn: #e07c00; --warn-dim: rgba(224,124,0,0.1);
     --ok: #0a9e5c; --ok-dim: rgba(10,158,92,0.1);
     --teal: #0891b2; --teal-dim: rgba(8,145,178,0.1);
     --muted: #8492a6; --text: #1a2233; --text2: #4a5568;
     --red: #e03c3c; --red-dim: rgba(224,60,60,0.08);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Noto Sans JP', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+  body { font-family: 'Noto Sans JP', 'Noto Sans Thai', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
   header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
   .logo { display: flex; align-items: center; gap: 12px; }
@@ -25,11 +24,11 @@
   .logo-sub { font-size: 11px; color: var(--muted); }
   .header-right { display: flex; align-items: center; gap: 16px; }
   .last-updated { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
-  .btn-fetch { background: var(--teal); color: #fff; border: none; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: opacity 0.15s; font-family: 'Noto Sans JP', sans-serif; }
-  .btn-fetch:hover { opacity: 0.85; } .btn-fetch:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-refresh { background: var(--teal); color: #fff; border: none; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: opacity 0.15s; }
+  .btn-refresh:hover { opacity: 0.85; }
 
   .stats-bar { padding: 20px 32px; display: flex; gap: 16px; flex-wrap: wrap; }
-  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; min-width: 130px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; min-width: 150px; }
   .stat-card.pending { border-left: 3px solid var(--red); }
   .stat-card.done { border-left: 3px solid var(--ok); }
   .stat-num { font-size: 32px; font-weight: 700; font-family: 'DM Mono', monospace; line-height: 1; }
@@ -39,39 +38,40 @@
 
   .toolbar { padding: 0 32px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .filter-group { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
-  .filter-btn { padding: 6px 16px; border: none; background: transparent; color: var(--text2); border-radius: 7px; font-size: 13px; cursor: pointer; transition: all 0.15s; font-family: 'Noto Sans JP', sans-serif; font-weight: 500; }
+  .filter-btn { padding: 6px 16px; border: none; background: transparent; color: var(--text2); border-radius: 7px; font-size: 13px; cursor: pointer; transition: all 0.15s; font-weight: 500; }
   .filter-btn.active { background: var(--teal); color: #fff; }
-  .search-input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 10px; font-size: 13px; font-family: 'Noto Sans JP', sans-serif; outline: none; width: 240px; }
+  .search-input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 10px; font-size: 13px; outline: none; width: 260px; }
   .search-input:focus { border-color: var(--teal); }
 
   .table-wrap { padding: 0 32px 32px; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead th { text-align: left; padding: 10px 16px; color: var(--muted); font-weight: 500; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
-  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; cursor: pointer; }
+  tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
   tbody tr:hover { background: var(--surface2); }
   tbody tr.done-row { background: #f0f7f0; }
-  tbody td { padding: 14px 16px; vertical-align: middle; }
+  tbody td { padding: 12px 16px; vertical-align: middle; }
 
-  .status-badge { display: inline-flex; align-items: center; gap: 5px; padding: 6px 14px; border-radius: 8px; font-size: 13px; font-weight: 800; white-space: nowrap; }
-  .badge-pending { background: #ff3b30; color: #fff; }
-  .badge-done { background: #007aff; color: #fff; }
-  .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  /* インラインステータス切り替えボタン */
+  .status-toggle { display: inline-flex; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .status-toggle-btn { padding: 5px 12px; border: none; background: transparent; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
+  .status-toggle-btn.pending { color: var(--red); }
+  .status-toggle-btn.pending.active { background: var(--red); color: #fff; }
+  .status-toggle-btn.done { color: var(--ok); border-left: 1px solid var(--border); }
+  .status-toggle-btn.done.active { background: var(--ok); color: #fff; }
 
-  .sender-name { font-weight: 500; color: var(--text); }
-  .lang-tag { font-size: 10px; color: var(--muted); font-family: 'DM Mono', monospace; margin-top: 2px; text-transform: uppercase; }
-  .date-cell { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text2); white-space: nowrap; }
-
-  .slip-row { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+  .sender-name { font-weight: 600; color: var(--text); font-size: 13px; }
+  .date-cell { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2); white-space: nowrap; }
+  .slip-row { display: flex; align-items: center; gap: 8px; }
   .slip-amount { font-size: 14px; font-weight: 700; color: var(--teal); font-family: 'DM Mono', monospace; }
   .slip-sep { color: var(--muted); font-size: 11px; }
-  .slip-date { font-size: 11px; color: var(--muted); }
   .slip-name { font-size: 12px; color: var(--text2); }
-  .copy-btn { padding: 2px 8px; border: 1px solid var(--border); border-radius: 5px; background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; transition: all 0.15s; flex-shrink: 0; }
+  .copy-btn { padding: 2px 8px; border: 1px solid var(--border); border-radius: 5px; background: transparent; color: var(--muted); font-size: 10px; cursor: pointer; transition: all 0.15s; }
   .copy-btn:hover { border-color: var(--teal); color: var(--teal); }
-  .read-btn { padding: 4px 10px; border: 1px solid var(--teal); border-radius: 6px; background: var(--teal-dim); color: var(--teal); font-size: 11px; font-weight: 600; cursor: pointer; }
+  .img-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(8,145,178,0.25); border-radius: 5px; padding: 3px 8px; font-size: 11px; font-weight: 500; cursor: pointer; }
+  .img-chip:hover { background: var(--teal); color: #fff; }
+  .read-btn { padding: 4px 10px; border: 1px solid var(--teal); border-radius: 6px; background: var(--teal-dim); color: var(--teal); font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
   .read-btn:hover { background: var(--teal); color: #fff; }
-
-  .att-chip { display: inline-flex; align-items: center; gap: 4px; background: var(--teal-dim); color: var(--teal); border: 1px solid rgba(8,145,178,0.25); border-radius: 5px; padding: 3px 8px; font-size: 11px; font-weight: 500; }
+  .read-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
   /* MODAL */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
@@ -82,29 +82,21 @@
   .modal-title { font-size: 16px; font-weight: 700; }
   .modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; }
   .modal-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 18px; }
-
   .meta-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   .meta-item label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; display: block; margin-bottom: 4px; }
   .meta-item span { font-size: 14px; font-weight: 500; }
-
   .slip-info-box { background: var(--teal-dim); border: 1px solid rgba(8,145,178,0.3); border-radius: 10px; padding: 14px 18px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .slip-inline { display: flex; align-items: center; gap: 8px; flex: 1; font-family: 'DM Mono', monospace; }
   .slip-inline .s-amount { font-size: 20px; font-weight: 700; color: var(--teal); }
   .slip-inline .s-sep { color: var(--muted); }
   .slip-inline .s-date { font-size: 13px; color: var(--text2); }
   .slip-inline .s-name { font-size: 14px; font-weight: 600; color: var(--text); }
-  .slip-copy-btn { padding: 6px 14px; border: 1px solid rgba(8,145,178,0.4); border-radius: 6px; background: transparent; color: var(--teal); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; font-family: 'Noto Sans JP', sans-serif; }
+  .slip-copy-btn { padding: 6px 14px; border: 1px solid rgba(8,145,178,0.4); border-radius: 6px; background: transparent; color: var(--teal); font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
   .slip-copy-btn:hover { background: var(--teal); color: #fff; }
-
+  .section-label { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
   .img-preview { width: 100%; border-radius: 10px; max-height: 360px; object-fit: contain; background: var(--bg); border: 1px solid var(--border); cursor: zoom-in; }
-
-  .section-label { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 10px; }
-  .status-buttons { display: flex; gap: 8px; }
-  .status-btn { flex: 1; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: transparent; color: var(--text2); cursor: pointer; font-size: 13px; font-weight: 600; font-family: 'Noto Sans JP', sans-serif; }
-  .status-btn.active-pending { background: var(--red-dim); border-color: var(--red); color: var(--red); }
-  .status-btn.active-done { background: var(--ok-dim); border-color: var(--ok); color: var(--ok); }
-  .note-input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 13px; font-family: 'Noto Sans JP', sans-serif; outline: none; width: 100%; resize: vertical; min-height: 64px; }
-  .save-btn { background: var(--teal); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: 'Noto Sans JP', sans-serif; width: 100%; }
+  .note-input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none; width: 100%; resize: vertical; min-height: 64px; font-family: inherit; }
+  .save-btn { background: var(--teal); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; }
   .save-btn:hover { opacity: 0.85; }
 
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; cursor: zoom-out; }
@@ -129,14 +121,14 @@
   <div class="logo">
     <div class="logo-icon">💳</div>
     <div>
-      <div class="logo-text">スリップ管理</div>
-      <div class="logo-sub">サイトウフーズ Webアップロード</div>
+      <div class="logo-text">Slip Management / จัดการสลิป</div>
+      <div class="logo-sub">Saito Foods — Web Upload</div>
     </div>
   </div>
   <div class="header-right">
     <span class="last-updated" id="lastUpdated">---</span>
-    <button class="btn-fetch" id="fetchBtn" onclick="loadData()">
-      <span id="fetchIcon">↻</span> 更新
+    <button class="btn-refresh" id="fetchBtn" onclick="loadData()">
+      <span id="fetchIcon">↻</span> Refresh / รีเฟรช
     </button>
   </div>
 </header>
@@ -145,11 +137,11 @@
 
 <div class="toolbar">
   <div class="filter-group">
-    <button class="filter-btn active" onclick="setFilter('all',this)">すべて</button>
-    <button class="filter-btn" onclick="setFilter('未確認',this)">未確認</button>
-    <button class="filter-btn" onclick="setFilter('確認済み',this)">確認済み</button>
+    <button class="filter-btn active" onclick="setFilter('all',this)">All / ทั้งหมด</button>
+    <button class="filter-btn" onclick="setFilter('未確認',this)">Unconfirmed / ยังไม่ยืนยัน</button>
+    <button class="filter-btn" onclick="setFilter('確認済み',this)">Confirmed / ยืนยันแล้ว</button>
   </div>
-  <input type="text" class="search-input" placeholder="🔍 名前・金額で検索..." oninput="setSearch(this.value)">
+  <input type="text" class="search-input" placeholder="🔍 Search name / amount...">
 </div>
 
 <div class="table-wrap">
@@ -159,7 +151,7 @@
   </table>
   <div class="empty" id="emptyState" style="display:none;">
     <div class="empty-icon">📭</div>
-    <div>スリップはまだありません</div>
+    <div>No slips yet / ยังไม่มีสลิป</div>
   </div>
 </div>
 
@@ -172,16 +164,15 @@
     </div>
     <div class="modal-body">
       <div class="meta-grid">
-        <div class="meta-item"><label>お名前</label><span id="mName"></span></div>
-        <div class="meta-item"><label>受信日時</label><span id="mDate" style="font-family:'DM Mono',monospace;font-size:12px;"></span></div>
-        <div class="meta-item"><label>言語</label><span id="mLang"></span></div>
-        <div class="meta-item"><label>注文Ref</label><span id="mRef"></span></div>
+        <div class="meta-item"><label>Name / ชื่อ</label><span id="mName"></span></div>
+        <div class="meta-item"><label>Received / รับเมื่อ</label><span id="mDate" style="font-family:'DM Mono',monospace;font-size:12px;"></span></div>
+        <div class="meta-item"><label>Language / ภาษา</label><span id="mLang"></span></div>
+        <div class="meta-item"><label>Order Ref</label><span id="mRef"></span></div>
       </div>
 
-      <!-- Vision API読み取り結果 -->
       <div>
-        <div class="section-label">💡 スリップ読み取り結果</div>
-        <div class="slip-info-box" id="slipInfoBox">
+        <div class="section-label">💡 Slip Data / ข้อมูลสลิป</div>
+        <div class="slip-info-box">
           <div class="slip-inline">
             <span class="s-amount" id="sAmount">---</span>
             <span class="s-sep">|</span>
@@ -189,35 +180,36 @@
             <span class="s-sep">|</span>
             <span class="s-name" id="sName">---</span>
           </div>
-          <button class="slip-copy-btn" onclick="copySlip()">📋 コピー</button>
+          <button class="slip-copy-btn" onclick="copySlip()">📋 Copy</button>
         </div>
         <button class="read-btn" id="readBtn" style="margin-top:10px;width:100%;padding:10px;" onclick="readSlip()">
-          <span id="readContent">🔍 Claude AIでスリップを読み取る</span>
+          <span id="readContent">🔍 Re-read with Claude AI / อ่านซ้ำด้วย Claude AI</span>
         </button>
       </div>
 
-      <!-- スリップ画像 -->
       <div>
-        <div class="section-label">📎 スリップ画像</div>
+        <div class="section-label">📎 Slip Image / รูปสลิป</div>
         <img class="img-preview" id="slipImg" src="" onclick="openLightbox(this.src)" alt="">
       </div>
 
-      <!-- ステータス -->
       <div>
-        <div class="section-label">ステータス</div>
-        <div class="status-buttons">
-          <button class="status-btn" id="btn-pending" onclick="setModalStatus('未確認')">🔴 未確認</button>
-          <button class="status-btn" id="btn-done" onclick="setModalStatus('確認済み')">🟢 確認済み</button>
+        <div class="section-label">Status / สถานะ</div>
+        <div style="display:flex;gap:8px;">
+          <button class="status-toggle-btn pending" id="modal-btn-pending" onclick="setModalStatus('未確認')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);">
+            🔴 Unconfirmed / ยังไม่ยืนยัน
+          </button>
+          <button class="status-toggle-btn done" id="modal-btn-done" onclick="setModalStatus('確認済み')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);">
+            🟢 Confirmed / ยืนยันแล้ว
+          </button>
         </div>
       </div>
 
-      <!-- メモ -->
       <div>
-        <div class="section-label">メモ</div>
-        <textarea class="note-input" id="modalNote" placeholder="対応メモ..."></textarea>
+        <div class="section-label">Note / หมายเหตุ</div>
+        <textarea class="note-input" id="modalNote" placeholder="Note / หมายเหตุ..."></textarea>
       </div>
 
-      <button class="save-btn" onclick="saveStatus()">保存</button>
+      <button class="save-btn" onclick="saveStatus()">Save / บันทึก</button>
     </div>
   </div>
 </div>
@@ -225,17 +217,13 @@
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
   <img id="lightboxImg" src="" alt="">
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
-  // ===== GAS URL =====
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbw1QpEXf_9FFvoDrNbiPOeq3IvuBSC_Al6Js-TLhE1cnULJ_gf2VDPUG6U9LnX-6NCw/exec';
-  // ===================
 
   let allData = [];
   let currentFilter = 'all';
-  let currentSearch = '';
   let currentSlip = null;
   let currentStatus = '';
 
@@ -247,10 +235,10 @@
       const json = await res.json();
       allData = json.data || [];
       updateStats();
-      document.getElementById('lastUpdated').textContent = '最終更新: ' + new Date().toLocaleTimeString('ja-JP');
+      document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('en-GB');
       renderTable();
     } catch(e) {
-      showToast('読み込みエラー', true);
+      showToast('Load error', true);
     } finally {
       icon.textContent = '↻';
     }
@@ -260,10 +248,16 @@
     const pending = allData.filter(d => d.status === '未確認').length;
     const done = allData.filter(d => d.status === '確認済み').length;
     document.getElementById('statsBar').innerHTML = `
-      <div class="stat-card pending"><div class="stat-num">${pending}</div><div class="stat-label">未確認</div></div>
-      <div class="stat-card done"><div class="stat-num">${done}</div><div class="stat-label">確認済み</div></div>
+      <div class="stat-card pending">
+        <div class="stat-num">${pending}</div>
+        <div class="stat-label">Unconfirmed / ยังไม่ยืนยัน</div>
+      </div>
+      <div class="stat-card done">
+        <div class="stat-num">${done}</div>
+        <div class="stat-label">Confirmed / ยืนยันแล้ว</div>
+      </div>
     `;
-    document.title = pending > 0 ? `(${pending}) スリップ管理` : 'スリップ管理';
+    document.title = pending > 0 ? `(${pending}) Slip Management` : 'Slip Management';
   }
 
   function setFilter(f, btn) {
@@ -272,46 +266,132 @@
     btn.classList.add('active');
     renderTable();
   }
-  function setSearch(v) { currentSearch = v.toLowerCase(); renderTable(); }
 
-  function renderTable() {
+  document.querySelector('.search-input').addEventListener('input', function() {
+    renderTable(this.value.toLowerCase());
+  });
+
+  function renderTable(search = '') {
     let data = allData;
     if (currentFilter !== 'all') data = data.filter(d => d.status === currentFilter);
-    if (currentSearch) data = data.filter(d =>
-      (d.name||'').toLowerCase().includes(currentSearch) ||
-      (d.amount||'').toLowerCase().includes(currentSearch)
+    if (search) data = data.filter(d =>
+      (d.name||'').toLowerCase().includes(search) ||
+      (d.amount||'').toLowerCase().includes(search)
     );
 
     const thead = document.getElementById('tableHead');
     const tbody = document.getElementById('tableBody');
     const empty = document.getElementById('emptyState');
 
-    thead.innerHTML = `<tr><th>ステータス</th><th>お名前</th><th>読み取り結果</th><th>画像</th><th>受信日時</th></tr>`;
+    thead.innerHTML = `<tr>
+      <th>Status / สถานะ</th>
+      <th>Name / ชื่อ</th>
+      <th>Amount & Name / ยอดและชื่อ</th>
+      <th>Image / รูป</th>
+      <th>Received / รับเมื่อ</th>
+    </tr>`;
 
     if (!data.length) { tbody.innerHTML=''; empty.style.display=''; return; }
     empty.style.display = 'none';
 
     tbody.innerHTML = data.map(d => {
-      const badge = d.status === '確認済み'
-        ? `<span class="status-badge badge-done"><span class="dot"></span>確認済み</span>`
-        : `<span class="status-badge badge-pending"><span class="dot"></span>未確認</span>`;
-      const name = `<div class="sender-name">${esc(d.name)||'(不明)'}</div><div class="lang-tag">${d.lang||''}</div>`;
+      const isPending = d.status === '未確認';
+
+      // インラインステータス切り替え
+      const statusToggle = `
+        <div class="status-toggle">
+          <button class="status-toggle-btn pending ${isPending?'active':''}"
+            onclick="event.stopPropagation();toggleStatus(${d.row},'未確認',this)"
+            title="Unconfirmed">● Unconfirmed</button>
+          <button class="status-toggle-btn done ${!isPending?'active':''}"
+            onclick="event.stopPropagation();toggleStatus(${d.row},'確認済み',this)"
+            title="Confirmed">● Confirmed</button>
+        </div>`;
+
+      const name = `<div class="sender-name">${esc(d.name)||'(unknown)'}</div>`;
+
       const slip = d.amount
-        ? `<div class="slip-row"><span class="slip-amount">${esc(d.amount)}</span><span class="slip-sep">|</span><span class="slip-name">${esc(d.slipName||'')}</span><button class="copy-btn" onclick="event.stopPropagation();copyText('${esc(d.amount)} | ${esc(d.slipDate||'')} | ${esc(d.slipName||'')}')">📋</button></div>`
-        : `<span style="color:var(--muted);font-size:11px;">未読み取り</span>`;
-      const img = `<span class="att-chip">📎 画像</span>`;
-      return `<tr class="${d.status==='確認済み'?'done-row':''}" onclick="openModal(${d.row})">
-        <td>${badge}</td><td>${name}</td><td>${slip}</td><td>${img}</td>
-        <td class="date-cell">${esc(d.receivedAt)}</td></tr>`;
+        ? `<div class="slip-row">
+             <span class="slip-amount">${esc(d.amount)}</span>
+             <span class="slip-sep">|</span>
+             <span class="slip-name">${esc(d.slipName||'')}</span>
+             <button class="copy-btn" onclick="event.stopPropagation();copyText('${esc(d.amount)} | ${esc(d.slipDate||'')} | ${esc(d.slipName||'')}')">📋</button>
+           </div>`
+        : `<button class="read-btn" onclick="event.stopPropagation();quickRead(${d.row},this)">🔍 Read / อ่าน</button>`;
+
+      const img = `<span class="img-chip" onclick="event.stopPropagation();previewImg('${esc(driveImageUrl(d.driveUrl))}')">📎 View</span>`;
+
+      return `<tr class="${isPending?'':'done-row'}" onclick="openModal(${d.row})">
+        <td>${statusToggle}</td>
+        <td>${name}</td>
+        <td>${slip}</td>
+        <td>${img}</td>
+        <td class="date-cell">${formatDate(d.receivedAt)}</td>
+      </tr>`;
     }).join('');
+  }
+
+  // 一覧からワンクリックでステータス変更
+  async function toggleStatus(row, newStatus, btn) {
+    const tr = btn.closest('tr');
+    try {
+      await fetch(`${GAS_URL}?action=updateStatus&row=${row}&status=${encodeURIComponent(newStatus)}`);
+      const d = allData.find(x => x.row === row);
+      if (d) d.status = newStatus;
+      // ボタンのアクティブ状態を即時更新
+      const toggle = btn.closest('.status-toggle');
+      toggle.querySelectorAll('.status-toggle-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      tr.className = newStatus === '確認済み' ? 'done-row' : '';
+      updateStats();
+      showToast(newStatus === '確認済み' ? '✅ Confirmed / ยืนยันแล้ว' : '🔴 Unconfirmed / ยังไม่ยืนยัน');
+    } catch(e) {
+      showToast('Error', true);
+    }
+  }
+
+  // 一覧から直接読み取り
+  async function quickRead(row, btn) {
+    btn.disabled = true;
+    btn.textContent = '...';
+    try {
+      const res = await fetch(`${GAS_URL}?action=readSlip&row=${row}`);
+      const json = await res.json();
+      if (json.status === 'ok') {
+        const d = allData.find(x => x.row === row);
+        if (d) { d.amount = json.amount; d.slipDate = json.date; d.slipName = json.name; }
+        renderTable(document.querySelector('.search-input').value.toLowerCase());
+        showToast('✨ Read complete / อ่านสำเร็จ');
+      } else {
+        showToast('Read failed / อ่านไม่สำเร็จ', true);
+        btn.disabled = false;
+        btn.textContent = '🔍 Read / อ่าน';
+      }
+    } catch(e) {
+      showToast('Error', true);
+      btn.disabled = false;
+      btn.textContent = '🔍 Read / อ่าน';
+    }
   }
 
   function esc(s) { return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;'); }
 
   function driveImageUrl(url) {
-    // DriveのファイルURLを画像直接表示用に変換
     const m = (url||'').match(/[-\w]{25,}/);
     return m ? `https://drive.google.com/thumbnail?id=${m[0]}&sz=w800` : url;
+  }
+
+  function formatDate(s) {
+    if (!s) return '';
+    try {
+      const d = new Date(s);
+      if (isNaN(d)) return s;
+      return d.toLocaleDateString('en-GB') + ' ' + d.toLocaleTimeString('en-GB', {hour:'2-digit',minute:'2-digit'});
+    } catch { return s; }
+  }
+
+  function previewImg(src) {
+    openLightbox(src);
   }
 
   function openModal(row) {
@@ -319,39 +399,43 @@
     if (!d) return;
     currentSlip = d;
     currentStatus = d.status;
-
-    document.getElementById('modalName').textContent = d.name || '(不明)';
-    document.getElementById('mName').textContent = d.name || '(不明)';
-    document.getElementById('mDate').textContent = d.receivedAt || '';
+    document.getElementById('modalName').textContent = d.name || '(unknown)';
+    document.getElementById('mName').textContent = d.name || '(unknown)';
+    document.getElementById('mDate').textContent = formatDate(d.receivedAt);
     document.getElementById('mLang').textContent = d.lang || '-';
     document.getElementById('mRef').textContent = d.orderRef || '-';
-
     document.getElementById('sAmount').textContent = d.amount || '---';
     document.getElementById('sDate').textContent = d.slipDate || '---';
     document.getElementById('sName').textContent = d.slipName || '---';
-
     document.getElementById('slipImg').src = driveImageUrl(d.driveUrl);
     document.getElementById('modalNote').value = d.memo || '';
-
-    updateStatusButtons(d.status);
+    updateModalStatusButtons(d.status);
     document.getElementById('modalOverlay').classList.add('show');
   }
 
-  function setModalStatus(s) { currentStatus = s; updateStatusButtons(s); }
-  function updateStatusButtons(s) {
-    document.getElementById('btn-pending').className = 'status-btn' + (s==='未確認'?' active-pending':'');
-    document.getElementById('btn-done').className = 'status-btn' + (s==='確認済み'?' active-done':'');
+  function setModalStatus(s) { currentStatus = s; updateModalStatusButtons(s); }
+  function updateModalStatusButtons(s) {
+    const p = document.getElementById('modal-btn-pending');
+    const d = document.getElementById('modal-btn-done');
+    p.style.background = s==='未確認' ? 'var(--red)' : '';
+    p.style.color = s==='未確認' ? '#fff' : '';
+    d.style.background = s==='確認済み' ? 'var(--ok)' : '';
+    d.style.color = s==='確認済み' ? '#fff' : '';
   }
 
   function closeModal() { document.getElementById('modalOverlay').classList.remove('show'); }
+
+  const overlay = document.getElementById('modalOverlay');
+  overlay.addEventListener('mousedown', e => { if (e.target===overlay) overlay.dataset.close='1'; });
+  overlay.addEventListener('mouseup', e => { if (e.target===overlay && overlay.dataset.close==='1') closeModal(); delete overlay.dataset.close; });
 
   async function readSlip() {
     if (!currentSlip) return;
     const btn = document.getElementById('readBtn');
     btn.disabled = true;
-    document.getElementById('readContent').innerHTML = '<span class="spinner spinner-teal"></span> 読み取り中...';
+    document.getElementById('readContent').innerHTML = '<span class="spinner spinner-teal"></span> Reading...';
     try {
-      const res = await fetch(GAS_URL + '?action=readSlip&row=' + currentSlip.row);
+      const res = await fetch(`${GAS_URL}?action=readSlip&row=${currentSlip.row}`);
       const json = await res.json();
       if (json.status === 'ok') {
         document.getElementById('sAmount').textContent = json.amount || '---';
@@ -360,27 +444,24 @@
         currentSlip.amount = json.amount;
         currentSlip.slipDate = json.date;
         currentSlip.slipName = json.name;
-        showToast('✨ 読み取り完了');
-        renderTable();
+        showToast('✨ Read complete / อ่านสำเร็จ');
+        renderTable(document.querySelector('.search-input').value.toLowerCase());
       } else {
-        showToast('読み取り失敗: ' + (json.message||''), true);
+        showToast('Read failed / อ่านไม่สำเร็จ', true);
       }
     } catch(e) {
-      showToast('読み取りエラー', true);
+      showToast('Error', true);
     } finally {
       btn.disabled = false;
-      document.getElementById('readContent').textContent = '🔍 Claude AIでスリップを読み取る';
+      document.getElementById('readContent').textContent = '🔍 Re-read with Claude AI / อ่านซ้ำด้วย Claude AI';
     }
   }
 
   function copySlip() {
-    const a = document.getElementById('sAmount').textContent;
-    const d = document.getElementById('sDate').textContent;
-    const n = document.getElementById('sName').textContent;
-    copyText(`${a} | ${d} | ${n}`);
+    copyText(`${document.getElementById('sAmount').textContent} | ${document.getElementById('sDate').textContent} | ${document.getElementById('sName').textContent}`);
   }
   function copyText(text) {
-    navigator.clipboard.writeText(text).then(() => showToast('📋 コピーしました'));
+    navigator.clipboard.writeText(text).then(() => showToast('📋 Copied / คัดลอกแล้ว'));
   }
 
   async function saveStatus() {
@@ -388,11 +469,14 @@
     const memo = document.getElementById('modalNote').value;
     try {
       await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent(currentStatus)}&memo=${encodeURIComponent(memo)}`);
-      showToast('保存しました');
+      currentSlip.status = currentStatus;
+      currentSlip.memo = memo;
+      showToast('Saved / บันทึกแล้ว');
       closeModal();
-      loadData();
+      updateStats();
+      renderTable(document.querySelector('.search-input').value.toLowerCase());
     } catch(e) {
-      showToast('保存エラー', true);
+      showToast('Save error', true);
     }
   }
 
