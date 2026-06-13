@@ -119,11 +119,19 @@
     <div class="card-title" id="t-bank-title">🏦 振込先情報</div>
     <div class="qr-section">
       <div class="qr-image">
-        <img src="./qr.jpg" onerror="this.style.display='none';document.getElementById('qrFallback').style.display='flex'" alt="QR">
+        <img id="qrImg" src="./qr.jpg" onerror="this.style.display='none';document.getElementById('qrFallback').style.display='flex'" alt="QR">
         <div id="qrFallback" style="display:none;flex-direction:column;align-items:center;gap:8px;">
           <div style="font-size:48px">📱</div>
           <div style="font-size:11px;color:#bba870;text-align:center" id="t-qr-preparing">QRコード準備中</div>
         </div>
+      </div>
+      <button onclick="downloadQR()" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:#fffdf0;color:var(--orange);font-size:13px;font-weight:700;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;">
+        📥 <span id="t-qr-download">QRコードを保存する</span>
+      </button>
+      <!-- 現金払い案内 -->
+      <div style="width:100%;background:#f0f9ff;border-left:3px solid #0891b2;border-radius:8px;padding:12px 14px;font-size:12px;color:#164e63;line-height:1.7;">
+        <strong id="t-cash-head">💵 お支払い方法について</strong><br>
+        <span id="t-cash-body">お振込みのほか、商品お届け時に現金（タイバーツ）でのお支払いも可能です。現金でお支払いの場合、スリップの送信は不要です。</span>
       </div>
       <div class="account-box">
         <div class="account-row">
@@ -219,9 +227,12 @@
       'err-file': 'スリップ画像を選択してください。',
       'err-send': '送信エラー。もう一度お試しください。',
       'success-title': '送信しました！',
-      'success-body': 'スリップを受け付けました。\n確認次第、担当者よりご連絡いたします。\n\nありがとうございました🙏',
+      'success-body': 'スリップを受け付けました。\n\nありがとうございました🙏',
       'name-placeholder': '例：サイトウ タロウ',
       'qr-preparing': 'QRコード準備中',
+      'qr-download': 'QRコードを保存する',
+      'cash-head': '💵 お支払い方法について',
+      'cash-body': 'お振込みのほか、商品お届け時に現金（タイバーツ）でのお支払いも可能です。現金でお支払いの場合、スリップの送信は不要です。',
       'required': '必須',
     },
     en: {
@@ -246,9 +257,12 @@
       'err-file': 'Please select a slip image.',
       'err-send': 'Send failed. Please try again.',
       'success-title': 'Submitted!',
-      'success-body': 'Your slip has been received.\nWe will contact you once confirmed.\n\nThank you! 🙏',
+      'success-body': 'Your slip has been received.\n\nThank you! 🙏',
       'name-placeholder': 'e.g. Taro Saito',
       'qr-preparing': 'QR Code coming soon',
+      'qr-download': 'Save QR Code',
+      'cash-head': '💵 Payment Options',
+      'cash-body': 'You can also pay in cash (Thai Baht) upon delivery. No slip is needed if you pay by cash.',
       'required': 'Required',
     },
     th: {
@@ -273,9 +287,12 @@
       'err-file': 'กรุณาเลือกรูปสลิป',
       'err-send': 'เกิดข้อผิดพลาด กรุณาลองใหม่',
       'success-title': 'ส่งสำเร็จ!',
-      'success-body': 'ได้รับสลิปของคุณแล้ว\nเราจะติดต่อกลับเมื่อตรวจสอบแล้ว\n\nขอบคุณมากครับ/ค่ะ 🙏',
+      'success-body': 'ได้รับสลิปของคุณแล้ว\n\nขอบคุณมากครับ/ค่ะ 🙏',
       'name-placeholder': 'เช่น สมชาย ใจดี',
       'qr-preparing': 'QR Code กำลังเตรียม',
+      'qr-download': 'บันทึก QR Code',
+      'cash-head': '💵 วิธีชำระเงิน',
+      'cash-body': 'นอกจากการโอนเงินแล้ว สามารถชำระเป็นเงินสด (บาทไทย) ตอนส่งของได้ หากชำระเงินสด ไม่จำเป็นต้องส่งสลิป',
       'required': 'จำเป็น',
     }
   };
@@ -289,7 +306,8 @@
     const t = LANG[lang];
     const ids = ['title','subtitle','bank-title','bank-label','acct-label','name-label',
       'warn-head','warn-body','notice-head','notice-body','form-title',
-      'name-field','file-field','drop-text','drop-sub','qr-preparing'];
+      'name-field','file-field','drop-text','drop-sub','qr-preparing',
+      'qr-download','cash-head','cash-body'];
     ids.forEach(id => {
       const el = document.getElementById('t-' + id);
       if (el) el.textContent = t[id];
@@ -314,6 +332,14 @@
     if (!document.getElementById('submitBtn').disabled) {
       document.getElementById('submitContent').textContent = '📨 ' + t['submit'].replace('📨 ','');
     }
+  }
+
+  function downloadQR() {
+    const img = document.getElementById('qrImg');
+    const a = document.createElement('a');
+    a.href = img.src;
+    a.download = 'saito-foods-qr.jpg';
+    a.click();
   }
 
   // URLパラメータからお名前を自動入力
