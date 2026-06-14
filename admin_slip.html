@@ -243,10 +243,22 @@
         </div>
 
         <!-- 金額入力欄（テンプレート2・3のみ表示） -->
-        <div class="mail-amount-row" id="amountRow" style="display:none;">
-          <label>差額（baht）</label>
-          <input type="number" class="amount-input" id="mailAmount" placeholder="0" oninput="applyTemplate()">
-          <span style="font-size:13px;color:var(--muted);">baht</span>
+        <div id="amountRow" style="display:none;flex-direction:column;gap:8px;">
+          <div class="mail-amount-row">
+            <label>スリップ読取金額</label>
+            <input type="number" class="amount-input" id="slipAmountInput" placeholder="0" oninput="calcDiff()">
+            <span style="font-size:13px;color:var(--muted);">baht</span>
+          </div>
+          <div class="mail-amount-row">
+            <label>ご請求金額</label>
+            <input type="number" class="amount-input" id="chargeAmountInput" placeholder="0" oninput="calcDiff()">
+            <span style="font-size:13px;color:var(--muted);">baht</span>
+          </div>
+          <div class="mail-amount-row" id="diffRow" style="display:none;">
+            <label>差額</label>
+            <span id="diffDisplay" style="font-size:16px;font-weight:700;font-family:'DM Mono',monospace;"></span>
+            <span style="font-size:13px;color:var(--muted);">baht</span>
+          </div>
         </div>
 
         <div>
@@ -298,6 +310,22 @@
     { needsAmount: true, body: (amt) => `量り売りの商品がございまして最終的な合計金額が変更になりお代金が${amt}baht超過していました。お手数ですが、ご返金先の銀行口座をご指示頂けますでしょうか？ポイントとしてご返金も可能です。ご指示をお待ちしております。` },
   ];
 
+  function calcDiff() {
+    const slip = parseFloat(document.getElementById('slipAmountInput').value) || 0;
+    const charge = parseFloat(document.getElementById('chargeAmountInput').value) || 0;
+    const diffRow = document.getElementById('diffRow');
+    const diffDisplay = document.getElementById('diffDisplay');
+    if (slip > 0 && charge > 0) {
+      const diff = Math.abs(charge - slip);
+      diffRow.style.display = 'flex';
+      diffDisplay.textContent = diff;
+      diffDisplay.style.color = diff === 0 ? 'var(--ok)' : 'var(--red)';
+    } else {
+      diffRow.style.display = 'none';
+    }
+    applyTemplate();
+  }
+
   function applyTemplate() {
     const idx = parseInt(document.getElementById('templateSelect').value);
     const tmpl = TEMPLATES[idx];
@@ -307,7 +335,10 @@
 
     if (tmpl.needsAmount) {
       amountRow.style.display = 'flex';
-      const amt = document.getElementById('mailAmount').value || '〇〇';
+      const slip = parseFloat(document.getElementById('slipAmountInput').value) || 0;
+      const charge = parseFloat(document.getElementById('chargeAmountInput').value) || 0;
+      const diff = (slip > 0 && charge > 0) ? Math.abs(charge - slip) : 0;
+      const amt = diff > 0 ? diff : '〇〇';
       const body = tmpl.body(amt);
       preview.textContent = `${name} 様\n\n${body}\n\nサイトウフーズ`;
     } else {
@@ -324,8 +355,11 @@
     const tmpl = TEMPLATES[idx];
     let body;
     if (tmpl.needsAmount) {
-      const amt = document.getElementById('mailAmount').value;
-      if (!amt) { showToast('差額（baht）を入力してください', true); return; }
+      const slip = parseFloat(document.getElementById('slipAmountInput').value) || 0;
+      const charge = parseFloat(document.getElementById('chargeAmountInput').value) || 0;
+      if (!slip || !charge) { showToast('スリップ金額と請求金額を入力してください', true); return; }
+      const amt = Math.abs(charge - slip);
+      if (amt === 0) { showToast('差額が0です。金額を確認してください', true); return; }
       body = tmpl.body(amt);
     } else {
       body = tmpl.body;
@@ -343,7 +377,8 @@
       if (json.status === 'ok') {
         showToast('✉️ メールを送信しました！');
         document.getElementById('mailTo').value = '';
-        document.getElementById('mailAmount').value = '';
+        document.getElementById('slipAmountInput').value = '';
+        document.getElementById('chargeAmountInput').value = '';
         document.getElementById('templateSelect').value = '0';
         applyTemplate();
       } else {
@@ -476,7 +511,11 @@
     document.getElementById('modalNote').value = d.memo || '';
     // メールアドレス自動セット（あれば）
     document.getElementById('mailTo').value = d.email || '';
-    document.getElementById('mailAmount').value = '';
+    // スリップ読取金額を自動セット
+    const rawAmt = (d.amount || '').replace(/[^0-9.]/g, '');
+    document.getElementById('slipAmountInput').value = rawAmt || '';
+    document.getElementById('chargeAmountInput').value = '';
+    document.getElementById('diffRow').style.display = 'none';
     document.getElementById('templateSelect').value = '0';
     applyTemplate();
     updateModalStatusButtons(d.status);
