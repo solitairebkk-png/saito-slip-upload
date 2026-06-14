@@ -22,28 +22,20 @@
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'M PLUS Rounded 1c', sans-serif; background: var(--yellow-light); color: var(--text); min-height: 100vh; padding-bottom: 48px; }
-
-  /* ヘッダー */
   header { background: var(--yellow); padding: 0 16px; height: 72px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid var(--yellow-dark); box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
   .logo-wrap { display: flex; align-items: center; gap: 12px; }
   .logo-icon { font-size: 36px; }
   .logo-main { font-size: 20px; font-weight: 800; color: var(--brown); letter-spacing: 0.04em; }
   .logo-sub { font-size: 10px; font-weight: 500; color: var(--orange); letter-spacing: 0.08em; }
-
-  /* 言語切り替え */
   .lang-switcher { display: flex; gap: 4px; }
   .lang-btn { padding: 5px 10px; border: 1.5px solid var(--brown); border-radius: 20px; background: transparent; color: var(--brown); font-size: 12px; font-weight: 700; cursor: pointer; font-family: 'M PLUS Rounded 1c', sans-serif; transition: all 0.15s; }
   .lang-btn.active { background: var(--brown); color: var(--yellow); }
-
   .container { max-width: 520px; margin: 0 auto; padding: 28px 16px; }
   .page-title { text-align: center; margin-bottom: 28px; }
   .page-title h1 { font-size: 20px; font-weight: 800; color: var(--brown); margin-bottom: 6px; }
   .page-title p { font-size: 13px; color: var(--muted); line-height: 1.6; }
-
   .card { background: var(--white); border-radius: 16px; padding: 24px; margin-bottom: 20px; border: 1.5px solid var(--border); box-shadow: 0 2px 12px rgba(200,160,0,0.1); }
   .card-title { font-size: 13px; font-weight: 700; color: var(--orange); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 16px; }
-
-  /* 振込先 */
   .qr-section { display: flex; flex-direction: column; align-items: center; gap: 16px; }
   .qr-image { width: 200px; height: 200px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); background: #fff; display: flex; align-items: center; justify-content: center; flex-direction: column; }
   .qr-image img { width: 100%; height: 100%; object-fit: contain; }
@@ -53,39 +45,29 @@
   .account-label { font-size: 11px; color: var(--muted); font-weight: 500; min-width: 80px; }
   .account-value { font-weight: 700; color: var(--brown); text-align: right; font-size: 14px; }
   .account-value.big { font-size: 17px; color: var(--orange); letter-spacing: 0.04em; }
-
-  /* 注意書き（通常） */
   .notice { background: #fff8d6; border-left: 3px solid var(--yellow-dark); border-radius: 8px; padding: 12px 14px; font-size: 12px; color: var(--brown); line-height: 1.7; }
   .notice strong { color: var(--orange); }
-
-  /* 量り売り注意（赤） */
   .notice-red { background: var(--red-dim); border-left: 3px solid var(--red); border-radius: 8px; padding: 12px 14px; font-size: 12px; color: var(--red); line-height: 1.8; }
   .notice-red strong { font-weight: 800; }
-
-  /* フォーム */
   .form-group { margin-bottom: 18px; }
   .form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--brown); margin-bottom: 8px; }
   .required { color: var(--red); margin-left: 4px; font-size: 11px; }
   .form-input { width: 100%; border: 1.5px solid var(--border); border-radius: 10px; padding: 12px 14px; font-size: 15px; font-family: 'M PLUS Rounded 1c', sans-serif; color: var(--text); background: var(--white); outline: none; transition: border-color 0.15s; }
   .form-input:focus { border-color: var(--yellow-dark); }
   .form-input::placeholder { color: #bba870; }
-
   .file-drop-area { border: 2.5px dashed var(--border); border-radius: 12px; padding: 28px 16px; text-align: center; cursor: pointer; transition: all 0.15s; background: #fffdf0; position: relative; }
   .file-drop-area:hover, .file-drop-area.dragover { border-color: var(--yellow-dark); background: var(--yellow-light); }
   .file-drop-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
   .file-drop-icon { font-size: 36px; margin-bottom: 8px; }
   .file-drop-text { font-size: 14px; font-weight: 700; color: var(--orange); margin-bottom: 4px; }
   .file-drop-sub { font-size: 11px; color: var(--muted); }
-
   .file-preview { display: none; margin-top: 12px; position: relative; }
   .file-preview img { width: 100%; border-radius: 10px; border: 1.5px solid var(--border); max-height: 280px; object-fit: contain; }
   .file-preview-name { font-size: 12px; color: var(--muted); margin-top: 6px; text-align: center; }
   .file-remove-btn { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-size: 14px; cursor: pointer; }
-
   .submit-btn { width: 100%; background: var(--yellow); color: var(--brown); border: none; border-radius: 12px; padding: 16px; font-size: 16px; font-weight: 800; font-family: 'M PLUS Rounded 1c', sans-serif; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 12px rgba(200,160,0,0.3); }
   .submit-btn:hover { background: var(--yellow-dark); }
   .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-
   @keyframes spin { to { transform: rotate(360deg); } }
   .spinner { width: 18px; height: 18px; border: 2.5px solid rgba(100,70,0,0.3); border-top-color: var(--brown); border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; vertical-align: middle; }
   .error-msg { display: none; background: var(--red-dim); border: 1px solid rgba(212,60,60,0.3); color: var(--red); border-radius: 8px; padding: 12px 14px; font-size: 13px; margin-top: 12px; }
@@ -128,7 +110,6 @@
       <button onclick="downloadQR()" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:#fffdf0;color:var(--orange);font-size:13px;font-weight:700;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;">
         📥 <span id="t-qr-download">QRコードを保存する</span>
       </button>
-      <!-- 現金払い案内 -->
       <div style="width:100%;background:#f0f9ff;border-left:3px solid #0891b2;border-radius:8px;padding:12px 14px;font-size:12px;color:#164e63;line-height:1.7;">
         <strong id="t-cash-head">💵 お支払い方法について</strong><br>
         <span id="t-cash-body">お振込みのほか、商品お届け時に現金（タイバーツ）でのお支払いも可能です。現金でお支払いの場合、スリップの送信は不要です。</span>
@@ -151,14 +132,10 @@
           <span class="account-value">0105554007919109</span>
         </div>
       </div>
-
-      <!-- 量り売り注意（赤） -->
       <div class="notice-red">
         <strong id="t-warn-head">⚠️ 量り売り商品をご注文の方へ</strong><br>
         <span id="t-warn-body">量り売り商品が含まれる場合、重量確定後に最終金額をメールでご連絡いたします。<strong>重量確定後のメールに記載された金額</strong>をお振込みください。すでにお振込みいただいた場合、差額はご返金等で調整いたします。</span>
       </div>
-
-      <!-- 通常の注意 -->
       <div class="notice">
         <strong id="t-notice-head">📌 お願い</strong><br>
         <span id="t-notice-body">お振込み後は必ずこのページからスリップ画像をお送りください。スリップのご確認後、ご注文が確定となります。</span>
@@ -173,6 +150,12 @@
     <div class="form-group">
       <label id="t-name-field">お名前（注文者名）<span class="required">必須</span></label>
       <input type="text" class="form-input" id="nameInput" placeholder="例：サイトウ タロウ">
+    </div>
+
+    <!-- ★ メールアドレス欄（新規追加） -->
+    <div class="form-group">
+      <label id="t-email-field">メールアドレス<span class="required">必須</span></label>
+      <input type="email" class="form-input" id="emailInput" placeholder="例：taro@example.com">
     </div>
 
     <div class="form-group">
@@ -199,38 +182,32 @@
 </div>
 
 <script>
-  // ===== GAS URL設定 =====
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbw1QpEXf_9FFvoDrNbiPOeq3IvuBSC_Al6Js-TLhE1cnULJ_gf2VDPUG6U9LnX-6NCw/exec';
-  // ======================
 
-  // 多言語テキスト
   const LANG = {
     ja: {
       'title': '💳 お振込みスリップ送信',
       'subtitle': 'お振込み後、こちらのページからスリップ画像をお送りください。',
-      'bank-title': '🏦 振込先情報',
-      'bank-label': '銀行',
-      'acct-label': '口座番号',
-      'name-label': '口座名義',
+      'bank-title': '🏦 振込先情報', 'bank-label': '銀行', 'acct-label': '口座番号', 'name-label': '口座名義',
       'warn-head': '⚠️ 量り売り商品をご注文の方へ',
       'warn-body': '量り売り商品が含まれる場合、重量確定後に最終金額をメールでご連絡いたします。重量確定後のメールに記載された金額をお振込みください。すでにお振込みいただいた場合、差額はご返金等で調整いたします。',
       'notice-head': '📌 お願い',
       'notice-body': 'お振込み後は必ずこのページからスリップ画像をお送りください。スリップのご確認後、ご注文が確定となります。',
       'form-title': '📤 スリップを送る',
       'name-field': 'お名前（注文者名）',
+      'email-field': 'メールアドレス',
       'file-field': 'スリップ画像',
-      'drop-text': '画像をタップして選択',
-      'drop-sub': 'JPG・PNG・HEICなど対応',
-      'submit': '📨 スリップを送信する',
-      'sending': '送信中...',
+      'drop-text': '画像をタップして選択', 'drop-sub': 'JPG・PNG・HEICなど対応',
+      'submit': '📨 スリップを送信する', 'sending': '送信中...',
       'err-name': 'お名前をご入力ください。',
+      'err-email': 'メールアドレスをご入力ください。',
       'err-file': 'スリップ画像を選択してください。',
       'err-send': '送信エラー。もう一度お試しください。',
       'success-title': '送信しました！',
       'success-body': 'スリップを受け付けました。\n\nありがとうございました🙏',
       'name-placeholder': '例：サイトウ タロウ',
-      'qr-preparing': 'QRコード準備中',
-      'qr-download': 'QRコードを保存する',
+      'email-placeholder': '例：taro@example.com',
+      'qr-preparing': 'QRコード準備中', 'qr-download': 'QRコードを保存する',
       'cash-head': '💵 お支払い方法について',
       'cash-body': 'お振込みのほか、商品お届け時に現金（タイバーツ）でのお支払いも可能です。現金でお支払いの場合、スリップの送信は不要です。',
       'required': '必須',
@@ -238,29 +215,26 @@
     en: {
       'title': '💳 Upload Payment Slip',
       'subtitle': 'Please upload your transfer slip after making the payment.',
-      'bank-title': '🏦 Bank Account Details',
-      'bank-label': 'Bank',
-      'acct-label': 'Account No.',
-      'name-label': 'Account Name',
+      'bank-title': '🏦 Bank Account Details', 'bank-label': 'Bank', 'acct-label': 'Account No.', 'name-label': 'Account Name',
       'warn-head': '⚠️ Note for Weight-Based Items',
       'warn-body': 'If your order includes items sold by weight, the final amount will be confirmed and sent to you by email after the weight is measured. Please transfer the amount stated in that email. If you have already transferred and there is a difference, we will refund or adjust accordingly.',
       'notice-head': '📌 Important',
       'notice-body': 'Please upload your slip from this page after transferring. Your order will be confirmed once we verify the payment.',
       'form-title': '📤 Send Your Slip',
       'name-field': 'Your Name (as on the order)',
+      'email-field': 'Email Address',
       'file-field': 'Slip Image',
-      'drop-text': 'Tap to select image',
-      'drop-sub': 'JPG, PNG, HEIC supported',
-      'submit': '📨 Submit Slip',
-      'sending': 'Sending...',
+      'drop-text': 'Tap to select image', 'drop-sub': 'JPG, PNG, HEIC supported',
+      'submit': '📨 Submit Slip', 'sending': 'Sending...',
       'err-name': 'Please enter your name.',
+      'err-email': 'Please enter your email address.',
       'err-file': 'Please select a slip image.',
       'err-send': 'Send failed. Please try again.',
       'success-title': 'Submitted!',
       'success-body': 'Your slip has been received.\n\nThank you! 🙏',
       'name-placeholder': 'e.g. Taro Saito',
-      'qr-preparing': 'QR Code coming soon',
-      'qr-download': 'Save QR Code',
+      'email-placeholder': 'e.g. taro@example.com',
+      'qr-preparing': 'QR Code coming soon', 'qr-download': 'Save QR Code',
       'cash-head': '💵 Payment Options',
       'cash-body': 'You can also pay in cash (Thai Baht) upon delivery. No slip is needed if you pay by cash.',
       'required': 'Required',
@@ -268,29 +242,26 @@
     th: {
       'title': '💳 ส่งสลิปการโอนเงิน',
       'subtitle': 'หลังโอนเงินแล้ว กรุณาส่งรูปสลิปผ่านหน้านี้',
-      'bank-title': '🏦 ข้อมูลบัญชีธนาคาร',
-      'bank-label': 'ธนาคาร',
-      'acct-label': 'เลขบัญชี',
-      'name-label': 'ชื่อบัญชี',
+      'bank-title': '🏦 ข้อมูลบัญชีธนาคาร', 'bank-label': 'ธนาคาร', 'acct-label': 'เลขบัญชี', 'name-label': 'ชื่อบัญชี',
       'warn-head': '⚠️ สำหรับสินค้าที่ขายตามน้ำหนัก',
       'warn-body': 'หากมีสินค้าที่คิดราคาตามน้ำหนัก เราจะแจ้งยอดสุดท้ายทางอีเมลหลังจากชั่งน้ำหนักแล้ว กรุณาโอนตามยอดในอีเมลนั้น หากโอนไปแล้วและมีส่วนต่าง เราจะคืนเงินหรือปรับยอดให้',
       'notice-head': '📌 ข้อควรทราบ',
       'notice-body': 'กรุณาส่งสลิปผ่านหน้านี้ทุกครั้งหลังโอนเงิน คำสั่งซื้อจะได้รับการยืนยันเมื่อเราตรวจสอบสลิปแล้ว',
       'form-title': '📤 ส่งสลิป',
       'name-field': 'ชื่อผู้สั่งซื้อ',
+      'email-field': 'อีเมล',
       'file-field': 'รูปสลิป',
-      'drop-text': 'แตะเพื่อเลือกรูปภาพ',
-      'drop-sub': 'รองรับ JPG, PNG, HEIC',
-      'submit': '📨 ส่งสลิป',
-      'sending': 'กำลังส่ง...',
+      'drop-text': 'แตะเพื่อเลือกรูปภาพ', 'drop-sub': 'รองรับ JPG, PNG, HEIC',
+      'submit': '📨 ส่งสลิป', 'sending': 'กำลังส่ง...',
       'err-name': 'กรุณากรอกชื่อของคุณ',
+      'err-email': 'กรุณากรอกอีเมลของคุณ',
       'err-file': 'กรุณาเลือกรูปสลิป',
       'err-send': 'เกิดข้อผิดพลาด กรุณาลองใหม่',
       'success-title': 'ส่งสำเร็จ!',
       'success-body': 'ได้รับสลิปของคุณแล้ว\n\nขอบคุณมากครับ/ค่ะ 🙏',
       'name-placeholder': 'เช่น สมชาย ใจดี',
-      'qr-preparing': 'QR Code กำลังเตรียม',
-      'qr-download': 'บันทึก QR Code',
+      'email-placeholder': 'เช่น somchai@example.com',
+      'qr-preparing': 'QR Code กำลังเตรียม', 'qr-download': 'บันทึก QR Code',
       'cash-head': '💵 วิธีชำระเงิน',
       'cash-body': 'นอกจากการโอนเงินแล้ว สามารถชำระเป็นเงินสด (บาทไทย) ตอนส่งของได้ หากชำระเงินสด ไม่จำเป็นต้องส่งสลิป',
       'required': 'จำเป็น',
@@ -306,13 +277,12 @@
     const t = LANG[lang];
     const ids = ['title','subtitle','bank-title','bank-label','acct-label','name-label',
       'warn-head','warn-body','notice-head','notice-body','form-title',
-      'name-field','file-field','drop-text','drop-sub','qr-preparing',
-      'qr-download','cash-head','cash-body'];
+      'name-field','email-field','file-field','drop-text','drop-sub',
+      'qr-preparing','qr-download','cash-head','cash-body'];
     ids.forEach(id => {
       const el = document.getElementById('t-' + id);
       if (el) el.textContent = t[id];
     });
-    // 量り売り注意の強調
     const warnBody = document.getElementById('t-warn-body');
     if (lang === 'ja') {
       warnBody.innerHTML = '量り売り商品が含まれる場合、重量確定後に最終金額をメールでご連絡いたします。<strong>重量確定後のメールに記載された金額</strong>をお振込みください。すでにお振込みいただいた場合、差額はご返金等で調整いたします。';
@@ -321,14 +291,14 @@
     } else {
       warnBody.innerHTML = 'หากมีสินค้าที่คิดราคาตามน้ำหนัก เราจะแจ้งยอดสุดท้ายทางอีเมลหลังชั่งน้ำหนัก กรุณาโอนตามยอดในอีเมลนั้น หากโอนไปแล้วและมีส่วนต่าง เราจะคืนเงินหรือปรับยอดให้';
     }
-    // name-field の必須ラベル
     const nameLabel = document.getElementById('t-name-field');
     if (nameLabel) nameLabel.innerHTML = t['name-field'] + `<span class="required"> ${t['required']}</span>`;
+    const emailLabel = document.getElementById('t-email-field');
+    if (emailLabel) emailLabel.innerHTML = t['email-field'] + `<span class="required"> ${t['required']}</span>`;
     const fileLabel = document.getElementById('t-file-field');
     if (fileLabel) fileLabel.innerHTML = t['file-field'] + `<span class="required"> ${t['required']}</span>`;
-    // placeholder
     document.getElementById('nameInput').placeholder = t['name-placeholder'];
-    // submit button
+    document.getElementById('emailInput').placeholder = t['email-placeholder'];
     if (!document.getElementById('submitBtn').disabled) {
       document.getElementById('submitContent').textContent = '📨 ' + t['submit'].replace('📨 ','');
     }
@@ -342,11 +312,9 @@
     a.click();
   }
 
-  // URLパラメータからお名前を自動入力
   const params = new URLSearchParams(window.location.search);
   if (params.get('name')) document.getElementById('nameInput').value = decodeURIComponent(params.get('name'));
 
-  // ファイル処理
   const fileInput = document.getElementById('fileInput');
   const dropArea = document.getElementById('dropArea');
   let selectedFile = null;
@@ -382,14 +350,15 @@
     const t = LANG[currentLang];
     document.getElementById('errorMsg').style.display = 'none';
     const name = document.getElementById('nameInput').value.trim();
+    const email = document.getElementById('emailInput').value.trim();
     if (!name) { showError(t['err-name']); return; }
+    if (!email) { showError(t['err-email']); return; }
     if (!selectedFile) { showError(t['err-file']); return; }
 
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
     document.getElementById('submitContent').innerHTML = `<span class="spinner"></span> ${t['sending']}`;
 
-    // 画像をcanvasで圧縮（最大1200px、JPEG品質0.7）
     const compressImage = (file) => new Promise(resolve => {
       const reader = new FileReader();
       reader.onload = e => {
@@ -404,8 +373,7 @@
           const canvas = document.createElement('canvas');
           canvas.width = w; canvas.height = h;
           canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
-          resolve(dataUrl.split(',')[1]);
+          resolve(canvas.toDataURL('image/jpeg', 0.7).split(',')[1]);
         };
         img.src = e.target.result;
       };
@@ -415,16 +383,13 @@
     try {
       const base64 = await compressImage(selectedFile);
       const payload = {
-        name, fileName: selectedFile.name.replace(/\.[^.]+$/, '.jpg'),
+        name, email,
+        fileName: selectedFile.name.replace(/\.[^.]+$/, '.jpg'),
         fileType: 'image/jpeg', fileData: base64,
         uploadedAt: new Date().toLocaleString('ja-JP', {timeZone:'Asia/Bangkok'}),
         orderRef: params.get('ref') || '', lang: currentLang
       };
-      await fetch(GAS_URL, {
-        method: 'POST',
-        mode: 'no-cors',
-        body: JSON.stringify(payload)
-      });
+      await fetch(GAS_URL, { method: 'POST', mode: 'no-cors', body: JSON.stringify(payload) });
       document.getElementById('formCard').innerHTML = `
         <div style="text-align:center;padding:32px 16px">
           <div style="font-size:64px;margin-bottom:16px">✅</div>
