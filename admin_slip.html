@@ -512,7 +512,7 @@
     // メールアドレス自動セット（あれば）
     document.getElementById('mailTo').value = d.email || '';
     // スリップ読取金額を自動セット
-    const rawAmt = (d.amount || '').replace(/[^0-9.]/g, '');
+    const rawAmt = String(d.amount || '').replace(/[^0-9.]/g, '');
     document.getElementById('slipAmountInput').value = rawAmt || '';
     document.getElementById('chargeAmountInput').value = '';
     document.getElementById('diffRow').style.display = 'none';
