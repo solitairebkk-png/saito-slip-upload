@@ -424,7 +424,7 @@
   function renderTable(search = '') {
     let data = allData;
     if (currentFilter !== 'all') data = data.filter(d => d.status === currentFilter);
-    if (search) data = data.filter(d => (d.name||'').toLowerCase().includes(search) || (d.amount||'').toLowerCase().includes(search));
+    if (search) data = data.filter(d => (d.name||'').toLowerCase().includes(search) || (d.amount||'').toString().toLowerCase().includes(search));
     const thead = document.getElementById('tableHead');
     const tbody = document.getElementById('tableBody');
     const empty = document.getElementById('emptyState');
