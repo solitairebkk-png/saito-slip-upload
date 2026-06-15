@@ -294,19 +294,10 @@
   let currentSlip = null;
   let currentStatus = '';
 
-  // =====================================================
-  // ★ 定型文テンプレート
-  // =====================================================
   const TEMPLATES = [
-    // 0: デフォルト
-    { needsAmount: false, body: `お振込みありがとうございました。
-配送させていただきます。` },
-    // 1: 今後ともよろしく
-    { needsAmount: false, body: `お振込みありがとうございました。
-今後とも宜しくお願いします。` },
-    // 2: 不足
+    { needsAmount: false, body: `お振込みありがとうございました。\n配送させていただきます。` },
+    { needsAmount: false, body: `お振込みありがとうございました。\n今後とも宜しくお願いします。` },
     { needsAmount: true, body: (amt) => `量り売りの商品がございまして最終的な合計金額が変更になりお代金が${amt}baht不足していました。お手数ですが、追加でお振込み頂くか商品お受け取り時に現金でお渡し頂けますでしょうか？よろしくお願いします。` },
-    // 3: 超過
     { needsAmount: true, body: (amt) => `量り売りの商品がございまして最終的な合計金額が変更になりお代金が${amt}baht超過していました。お手数ですが、ご返金先の銀行口座をご指示頂けますでしょうか？ポイントとしてご返金も可能です。ご指示をお待ちしております。` },
   ];
 
@@ -375,12 +366,15 @@
       const res = await fetch(url);
       const json = await res.json();
       if (json.status === 'ok') {
-        showToast('✉️ メールを送信しました！');
-        document.getElementById('mailTo').value = '';
-        document.getElementById('slipAmountInput').value = '';
-        document.getElementById('chargeAmountInput').value = '';
-        document.getElementById('templateSelect').value = '0';
-        applyTemplate();
+        // ★ ステータスを確認済みに更新してモーダルを閉じる
+        const memo = document.getElementById('modalNote').value;
+        await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent('確認済み')}&memo=${encodeURIComponent(memo)}`);
+        currentSlip.status = '確認済み';
+        currentSlip.memo = memo;
+        updateStats();
+        renderTable(document.querySelector('.search-input').value.toLowerCase());
+        showToast('✉️ メール送信 & 確認済みに更新しました');
+        closeModal();
       } else {
         showToast('送信エラー: ' + (json.message || ''), true);
       }
@@ -391,10 +385,6 @@
       document.getElementById('sendMailContent').textContent = '📨 メールを送信する';
     }
   }
-
-  // =====================================================
-  // 以下、既存のコード（変更なし）
-  // =====================================================
 
   async function loadData() {
     const icon = document.getElementById('fetchIcon');
@@ -509,9 +499,7 @@
     document.getElementById('sName').textContent = d.slipName || '---';
     document.getElementById('slipImg').src = driveImageUrl(d.driveUrl);
     document.getElementById('modalNote').value = d.memo || '';
-    // メールアドレス自動セット（あれば）
     document.getElementById('mailTo').value = d.email || '';
-    // スリップ読取金額を自動セット
     const rawAmt = String(d.amount || '').replace(/[^0-9.]/g, '');
     document.getElementById('slipAmountInput').value = rawAmt || '';
     document.getElementById('chargeAmountInput').value = '';
