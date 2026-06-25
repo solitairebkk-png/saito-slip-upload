@@ -99,7 +99,6 @@
   .save-btn { background: var(--teal); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; }
   .save-btn:hover { opacity: 0.85; }
 
-  /* ★ メール送信セクション */
   .mail-section { background: var(--yellow-dim); border: 1.5px solid rgba(245,194,0,0.4); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
   .mail-section .section-label { color: #a07800; margin-bottom: 0; }
   .mail-to-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
@@ -108,7 +107,13 @@
   .mail-input:focus { border-color: var(--yellow); }
   .template-select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; font-size: 13px; outline: none; width: 100%; font-family: inherit; cursor: pointer; }
   .template-select:focus { border-color: var(--yellow); }
-  .mail-preview { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--text); white-space: pre-wrap; line-height: 1.7; min-height: 80px; }
+  /* ★ mail-preview を textarea に変更 */
+  .mail-preview { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--text); line-height: 1.7; min-height: 120px; width: 100%; resize: vertical; font-family: inherit; outline: none; }
+  .mail-preview:focus { border-color: var(--yellow); }
+  .mail-preview-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .mail-preview-label span { font-size: 11px; color: var(--muted); }
+  .mail-reset-btn { font-size: 11px; color: var(--teal); background: none; border: none; cursor: pointer; padding: 2px 6px; border-radius: 4px; }
+  .mail-reset-btn:hover { background: var(--teal-dim); }
   .mail-amount-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
   .mail-amount-row label { color: var(--muted); font-size: 11px; white-space: nowrap; }
   .amount-input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; font-size: 14px; font-weight: 700; outline: none; width: 120px; font-family: 'DM Mono', monospace; text-align: right; }
@@ -223,7 +228,7 @@
         </div>
       </div>
 
-      <!-- ★ メール送信セクション -->
+      <!-- メール送信セクション -->
       <div class="mail-section">
         <div class="section-label">✉️ 入金確認メールを送る / Send Confirmation Email</div>
 
@@ -262,8 +267,13 @@
         </div>
 
         <div>
-          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px;">送信内容プレビュー</label>
-          <div class="mail-preview" id="mailPreview"></div>
+          <!-- ★ ラベルにリセットボタンを追加 -->
+          <div class="mail-preview-label">
+            <span>送信内容（直接編集できます）</span>
+            <button class="mail-reset-btn" onclick="applyTemplate()">↺ テンプレートに戻す</button>
+          </div>
+          <!-- ★ div → textarea に変更 -->
+          <textarea class="mail-preview" id="mailPreview" rows="6"></textarea>
         </div>
 
         <button class="send-mail-btn" id="sendMailBtn" onclick="sendMail()">
@@ -330,11 +340,12 @@
       const charge = parseFloat(document.getElementById('chargeAmountInput').value) || 0;
       const diff = (slip > 0 && charge > 0) ? Math.abs(charge - slip) : 0;
       const amt = diff > 0 ? diff : '〇〇';
-      const body = tmpl.body(amt);
-      preview.textContent = `${name} 様\n\n${body}\n\nサイトウフーズ`;
+      // ★ value に変更
+      preview.value = `${name} 様\n\n${tmpl.body(amt)}\n\nサイトウフーズ`;
     } else {
       amountRow.style.display = 'none';
-      preview.textContent = `${name} 様\n\n${tmpl.body}\n\nサイトウフーズ`;
+      // ★ value に変更
+      preview.value = `${name} 様\n\n${tmpl.body}\n\nサイトウフーズ`;
     }
   }
 
@@ -342,40 +353,37 @@
     const toEmail = document.getElementById('mailTo').value.trim();
     if (!toEmail) { showToast('送信先メールアドレスを入力してください', true); return; }
 
+    // ★ textarea の value をそのまま送信本文として使う（編集内容を反映）
+    const fullBody = document.getElementById('mailPreview').value.trim();
+    if (!fullBody) { showToast('送信内容を入力してください', true); return; }
+
+    // 量り売りテンプレートの場合は差額チェック
     const idx = parseInt(document.getElementById('templateSelect').value);
     const tmpl = TEMPLATES[idx];
-    let body;
     if (tmpl.needsAmount) {
       const slip = parseFloat(document.getElementById('slipAmountInput').value) || 0;
       const charge = parseFloat(document.getElementById('chargeAmountInput').value) || 0;
       if (!slip || !charge) { showToast('スリップ金額と請求金額を入力してください', true); return; }
-      const amt = Math.abs(charge - slip);
-      if (amt === 0) { showToast('差額が0です。金額を確認してください', true); return; }
-      body = tmpl.body(amt);
-    } else {
-      body = tmpl.body;
+      if (Math.abs(charge - slip) === 0) { showToast('差額が0です。金額を確認してください', true); return; }
     }
 
-    const toName = currentSlip ? currentSlip.name : '';
     const btn = document.getElementById('sendMailBtn');
     btn.disabled = true;
     document.getElementById('sendMailContent').innerHTML = '<span class="spinner"></span> 送信中...';
 
     try {
-      const url = `${GAS_URL}?action=sendMail&toName=${encodeURIComponent(toName)}&toEmail=${encodeURIComponent(toEmail)}&body=${encodeURIComponent(body)}`;
+      // ★ GASのsendMailはtoName + bodyを受け取る構造なので、
+      //    フルボディをそのまま渡す（toNameは空にしてbodyにフル文面を入れる）
+      const url = `${GAS_URL}?action=sendMail&toName=&toEmail=${encodeURIComponent(toEmail)}&body=${encodeURIComponent(fullBody)}`;
       const res = await fetch(url);
       const json = await res.json();
       if (json.status === 'ok') {
-        // ステータス更新：no-corsでGASリダイレクトに対応しつつ確実に送信
         const memo = document.getElementById('modalNote').value;
-        const updateUrl = `${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent('確認済み')}&memo=${encodeURIComponent(memo)}`;
         try {
-          await fetch(updateUrl, { mode: 'no-cors' });
-        } catch(e) { /* no-corsでは常にエラーになるが送信は成功している */ }
-        // ローカルデータも更新
+          await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent('確認済み')}&memo=${encodeURIComponent(memo)}`, { mode: 'no-cors' });
+        } catch(e) {}
         currentSlip.status = '確認済み';
         currentSlip.memo = memo;
-        // モーダルを先に閉じてからサーバ再取得（一覧が消えるバグを防ぐ）
         closeModal();
         showToast('✉️ メール送信 & 確認済みに更新しました');
         await loadData();
@@ -455,7 +463,7 @@
     try {
       try {
         await fetch(`${GAS_URL}?action=updateStatus&row=${row}&status=${encodeURIComponent(newStatus)}`, { mode: 'no-cors' });
-      } catch(e) { /* no-cors */ }
+      } catch(e) {}
       const d = allData.find(x => x.row === row);
       if (d) d.status = newStatus;
       const toggle = btn.closest('.status-toggle');
@@ -560,7 +568,7 @@
     try {
       try {
         await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent(currentStatus)}&memo=${encodeURIComponent(memo)}`, { mode: 'no-cors' });
-      } catch(e) { /* no-cors */ }
+      } catch(e) {}
       currentSlip.status = currentStatus; currentSlip.memo = memo;
       closeModal();
       showToast('Saved');
