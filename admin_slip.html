@@ -15,10 +15,10 @@
     --red: #e03c3c; --red-dim: rgba(224,60,60,0.08);
     --yellow: #F5C200; --yellow-dim: rgba(245,194,0,0.12);
     --orange: #f97316; --orange-dim: rgba(249,115,22,0.1);
+    --purple: #7c3aed; --purple-dim: rgba(124,58,237,0.1);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans JP', 'Noto Sans Thai', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-
   header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; height: 64px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
   .logo { display: flex; align-items: center; gap: 12px; }
   .logo-icon { width: 32px; height: 32px; background: var(--teal); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 16px; }
@@ -28,7 +28,6 @@
   .last-updated { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; }
   .btn-refresh { background: var(--teal); color: #fff; border: none; padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 6px; transition: opacity 0.15s; }
   .btn-refresh:hover { opacity: 0.85; }
-
   .stats-bar { padding: 20px 32px; display: flex; gap: 16px; flex-wrap: wrap; }
   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; min-width: 150px; }
   .stat-card.pending { border-left: 3px solid var(--red); }
@@ -39,24 +38,26 @@
   .stat-card.done .stat-num { color: var(--ok); }
   .stat-card.sms .stat-num { color: var(--orange); }
   .stat-label { font-size: 12px; color: var(--muted); margin-top: 6px; }
-
-  /* タブ */
   .tab-bar { padding: 0 32px; display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0; }
   .tab-btn { padding: 14px 28px; border: none; background: transparent; color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
   .tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+  .tab-btn.mail-tab.active { color: var(--purple); border-bottom-color: var(--purple); }
   .tab-btn:hover:not(.active) { color: var(--text2); }
   .tab-badge { background: var(--red); color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
   .tab-badge.orange { background: var(--orange); }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
-
+  #panel-mail.active { display: flex; flex-direction: column; }
+  .mail-iframe-wrap { flex: 1; position: relative; }
+  #mailIframe { width: 100%; height: calc(100vh - 180px); border: none; display: block; }
+  .iframe-loading { position: absolute; inset: 0; background: var(--bg); display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 16px; color: var(--muted); font-size: 14px; }
+  .iframe-loading.hidden { display: none; }
   .toolbar { padding: 16px 32px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .filter-group { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
   .filter-btn { padding: 6px 16px; border: none; background: transparent; color: var(--text2); border-radius: 7px; font-size: 13px; cursor: pointer; transition: all 0.15s; font-weight: 500; }
   .filter-btn.active { background: var(--teal); color: #fff; }
   .search-input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 10px; font-size: 13px; outline: none; width: 260px; }
   .search-input:focus { border-color: var(--teal); }
-
   .table-wrap { padding: 0 32px 32px; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; }
   thead th { text-align: left; padding: 10px 16px; color: var(--muted); font-weight: 500; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; border-bottom: 1px solid var(--border); }
@@ -64,14 +65,12 @@
   tbody tr:hover { background: var(--surface2); }
   tbody tr.done-row { background: #f0f7f0; }
   tbody td { padding: 12px 16px; vertical-align: middle; }
-
   .status-toggle { display: inline-flex; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
   .status-toggle-btn { padding: 5px 12px; border: none; background: transparent; font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s; white-space: nowrap; }
   .status-toggle-btn.pending { color: var(--red); }
   .status-toggle-btn.pending.active { background: var(--red); color: #fff; }
   .status-toggle-btn.done { color: var(--ok); border-left: 1px solid var(--border); }
   .status-toggle-btn.done.active { background: var(--ok); color: #fff; }
-
   .sender-name { font-weight: 600; color: var(--text); font-size: 13px; }
   .date-cell { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text2); white-space: nowrap; }
   .slip-row { display: flex; align-items: center; gap: 8px; }
@@ -85,8 +84,6 @@
   .read-btn { padding: 4px 10px; border: 1px solid var(--teal); border-radius: 6px; background: var(--teal-dim); color: var(--teal); font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
   .read-btn:hover { background: var(--teal); color: #fff; }
   .read-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  /* SMS タブ */
   .sms-toolbar { padding: 16px 32px 12px; display: flex; align-items: center; gap: 12px; }
   .sms-date-group { padding: 0 32px 24px; }
   .sms-date-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; padding: 10px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
@@ -102,8 +99,6 @@
   .sms-raw { font-size: 11px; color: var(--muted); margin-top: 4px; word-break: break-all; }
   .sms-copy-btn { padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; white-space: nowrap; }
   .sms-copy-btn:hover { border-color: var(--orange); color: var(--orange); }
-
-  /* MODAL */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-overlay.show { opacity: 1; pointer-events: all; }
   .modal { background: var(--surface); border-radius: 16px; width: 100%; max-width: 640px; max-height: 88vh; overflow-y: auto; transform: translateY(16px); transition: transform 0.2s; }
@@ -128,7 +123,6 @@
   .note-input { background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 10px 14px; border-radius: 8px; font-size: 13px; outline: none; width: 100%; resize: vertical; min-height: 64px; font-family: inherit; }
   .save-btn { background: var(--teal); color: #fff; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; width: 100%; }
   .save-btn:hover { opacity: 0.85; }
-
   .mail-section { background: var(--yellow-dim); border: 1.5px solid rgba(245,194,0,0.4); border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; }
   .mail-section .section-label { color: #a07800; margin-bottom: 0; }
   .mail-to-row { display: flex; align-items: center; gap: 8px; font-size: 13px; }
@@ -150,18 +144,15 @@
   .send-mail-btn { background: var(--yellow); color: #5c3a0a; border: none; padding: 11px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; font-family: inherit; transition: opacity 0.15s; }
   .send-mail-btn:hover { opacity: 0.85; }
   .send-mail-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; cursor: zoom-out; }
   .lightbox.show { opacity: 1; pointer-events: all; }
   .lightbox img { max-width: 92vw; max-height: 92vh; object-fit: contain; border-radius: 8px; }
-
   .empty { text-align: center; padding: 64px 32px; color: var(--muted); }
   .empty-icon { font-size: 48px; margin-bottom: 16px; }
-
   @keyframes spin { to { transform: rotate(360deg); } }
   .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.6s linear infinite; }
   .spinner-teal { border: 2px solid rgba(8,145,178,0.3); border-top-color: var(--teal); }
-
+  .spinner-purple { border: 2px solid rgba(124,58,237,0.2); border-top-color: var(--purple); width: 32px; height: 32px; border-width: 3px; }
   .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--ok); color: #fff; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 400; transition: transform 0.3s; white-space: nowrap; }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.error { background: var(--red); }
@@ -187,7 +178,6 @@
 
 <div class="stats-bar" id="statsBar"></div>
 
-<!-- タブ -->
 <div class="tab-bar">
   <button class="tab-btn active" onclick="switchTab('slips',this)" id="tab-slips">
     📋 Slips <span class="tab-badge" id="badge-slips" style="display:none"></span>
@@ -195,9 +185,11 @@
   <button class="tab-btn" onclick="switchTab('sms',this)" id="tab-sms">
     📱 SCB SMS <span class="tab-badge orange" id="badge-sms" style="display:none"></span>
   </button>
+  <button class="tab-btn mail-tab" onclick="switchTab('mail',this)" id="tab-mail">
+    📬 メール管理
+  </button>
 </div>
 
-<!-- Slipsタブ -->
 <div class="tab-panel active" id="panel-slips">
   <div class="toolbar">
     <div class="filter-group">
@@ -219,7 +211,6 @@
   </div>
 </div>
 
-<!-- SMSタブ -->
 <div class="tab-panel" id="panel-sms">
   <div class="sms-toolbar">
     <span style="font-size:13px;color:var(--muted);">直近3日分のSCB入金通知 / SCB notifications (last 3 days)</span>
@@ -230,7 +221,22 @@
   </div>
 </div>
 
-<!-- Modal -->
+<!-- ★ NEW: メール管理タブ -->
+<div class="tab-panel" id="panel-mail">
+  <div class="mail-iframe-wrap">
+    <div class="iframe-loading" id="iframeLoading">
+      <span class="spinner spinner-purple"></span>
+      <span style="font-size:14px;color:var(--muted);">メール管理を読み込み中...</span>
+    </div>
+    <iframe
+      id="mailIframe"
+      src="about:blank"
+      data-src="https://saito-foods-inquiry.onrender.com/"
+      onload="onIframeLoad()"
+    ></iframe>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-header">
@@ -338,6 +344,7 @@
   let currentSlip = null;
   let currentStatus = '';
   let activeTab = 'slips';
+  let mailIframeLoaded = false;
 
   const TEMPLATES = [
     { needsAmount: false, body: `お振込みありがとうございました。\n配送させていただきます。` },
@@ -346,7 +353,6 @@
     { needsAmount: true, body: (amt) => `量り売りの商品がございまして最終的な合計金額が変更になりお代金が${amt}baht超過していました。お手数ですが、ご返金先の銀行口座をご指示頂けますでしょうか？ポイントとしてご返金も可能です。ご指示をお待ちしております。` },
   ];
 
-  // ===== タブ切り替え =====
   function switchTab(tab, btn) {
     activeTab = tab;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -354,9 +360,29 @@
     btn.classList.add('active');
     document.getElementById('panel-' + tab).classList.add('active');
     if (tab === 'sms' && allSmsData.length === 0) loadSms();
+    if (tab === 'mail' && !mailIframeLoaded) {
+      const iframe = document.getElementById('mailIframe');
+      iframe.src = iframe.dataset.src;
+      mailIframeLoaded = true;
+    }
+    if (tab === 'mail') adjustIframeHeight();
   }
 
-  // ===== 全データ読み込み =====
+  function onIframeLoad() {
+    document.getElementById('iframeLoading').classList.add('hidden');
+    adjustIframeHeight();
+  }
+
+  function adjustIframeHeight() {
+    const iframe = document.getElementById('mailIframe');
+    const tabBar = document.querySelector('.tab-bar');
+    const statsBar = document.getElementById('statsBar');
+    const used = 64 + (statsBar ? statsBar.offsetHeight : 0) + (tabBar ? tabBar.offsetHeight : 50);
+    iframe.style.height = (window.innerHeight - used) + 'px';
+  }
+
+  window.addEventListener('resize', () => { if (activeTab === 'mail') adjustIframeHeight(); });
+
   async function loadAll() {
     const icon = document.getElementById('fetchIcon');
     icon.innerHTML = '<span class="spinner spinner-teal"></span>';
@@ -365,7 +391,6 @@
     icon.textContent = '↻';
   }
 
-  // ===== スリップ読み込み =====
   async function loadData() {
     try {
       const res = await fetch(GAS_URL + '?action=list');
@@ -376,7 +401,6 @@
     } catch(e) { showToast('Load error', true); }
   }
 
-  // ===== SMS読み込み =====
   async function loadSms() {
     try {
       const res = await fetch(GAS_URL + '?action=smsList');
@@ -388,79 +412,50 @@
     }
   }
 
-  // ===== SMS表示 =====
   function renderSms() {
     const container = document.getElementById('smsContent');
     const countEl = document.getElementById('smsCount');
-
     if (!allSmsData.length) {
       container.innerHTML = '<div class="empty"><div class="empty-icon">📱</div><div>No SMS data yet / ยังไม่มีข้อมูล SMS</div></div>';
       countEl.textContent = '';
-      const badge = document.getElementById('badge-sms');
-      badge.style.display = 'none';
+      document.getElementById('badge-sms').style.display = 'none';
       return;
     }
-
     countEl.textContent = `${allSmsData.length}件`;
     const badge = document.getElementById('badge-sms');
     badge.textContent = allSmsData.length;
     badge.style.display = '';
-
-    // 日付グループ分け
     const groups = {};
     allSmsData.forEach(s => {
       const dateKey = s.received_at ? s.received_at.substring(0, 10) : 'Unknown';
       if (!groups[dateKey]) groups[dateKey] = [];
       groups[dateKey].push(s);
     });
-
     const today = new Date().toISOString().substring(0, 10);
     const yesterday = new Date(Date.now() - 86400000).toISOString().substring(0, 10);
-
     let html = '';
     Object.keys(groups).sort().reverse().forEach(dateKey => {
-      let label = dateKey;
-      if (dateKey === today) label = `📅 Today / วันนี้ — ${dateKey}`;
-      else if (dateKey === yesterday) label = `📅 Yesterday / เมื่อวาน — ${dateKey}`;
-      else label = `📅 ${dateKey}`;
-
+      let label = dateKey === today ? `📅 Today / วันนี้ — ${dateKey}` : dateKey === yesterday ? `📅 Yesterday / เมื่อวาน — ${dateKey}` : `📅 ${dateKey}`;
       html += `<div class="sms-date-label">${label} <span style="color:var(--orange);font-weight:700;">(${groups[dateKey].length}件)</span></div>`;
       groups[dateKey].forEach(s => {
         const time = s.received_at ? s.received_at.substring(11, 16) : '';
         const txTime = s.tx_date ? s.tx_date.slice(-5) : '';
-        html += `
-          <div class="sms-card">
-            <div class="sms-amount">${s.amount ? Number(s.amount).toLocaleString() + ' ฿' : '---'}</div>
-            <div class="sms-meta">
-              <div class="sms-meta-row">
-                ${s.bank ? `<span class="sms-bank">${esc(s.bank)}</span>` : ''}
-                ${s.ref_code ? `<span class="sms-ref">${esc(s.ref_code)}</span>` : ''}
-                ${s.account_no ? `<span class="sms-acc">→ ${esc(s.account_no)}</span>` : ''}
-                <span class="sms-time">${txTime || time}</span>
-              </div>
-              <div class="sms-raw">${esc(s.raw_text || '')}</div>
-            </div>
-            <button class="sms-copy-btn" onclick="copyText('${esc(s.amount)} | ${esc(s.bank||'')} | ${esc(s.ref_code||'')} | ${esc(s.tx_date||'')}')">📋 Copy</button>
-          </div>`;
+        html += `<div class="sms-card"><div class="sms-amount">${s.amount ? Number(s.amount).toLocaleString() + ' ฿' : '---'}</div><div class="sms-meta"><div class="sms-meta-row">${s.bank ? `<span class="sms-bank">${esc(s.bank)}</span>` : ''}${s.ref_code ? `<span class="sms-ref">${esc(s.ref_code)}</span>` : ''}${s.account_no ? `<span class="sms-acc">→ ${esc(s.account_no)}</span>` : ''}<span class="sms-time">${txTime || time}</span></div><div class="sms-raw">${esc(s.raw_text || '')}</div></div><button class="sms-copy-btn" onclick="copyText('${esc(s.amount)} | ${esc(s.bank||'')} | ${esc(s.ref_code||'')} | ${esc(s.tx_date||'')}'  )">📋 Copy</button></div>`;
       });
     });
-
     container.innerHTML = html;
   }
 
   function updateStats() {
     const pending = allData.filter(d => d.status === '未確認').length;
     const done = allData.filter(d => d.status === '確認済み').length;
-
     document.getElementById('statsBar').innerHTML = `
       <div class="stat-card pending"><div class="stat-num">${pending}</div><div class="stat-label">Unconfirmed / ยังไม่ยืนยัน</div></div>
       <div class="stat-card done"><div class="stat-num">${done}</div><div class="stat-label">Confirmed / ยืนยันแล้ว</div></div>
       <div class="stat-card sms"><div class="stat-num" id="smsStatNum">${allSmsData.length || '—'}</div><div class="stat-label">SCB SMS (3 days)</div></div>`;
-
     const badge = document.getElementById('badge-slips');
     if (pending > 0) { badge.textContent = pending; badge.style.display = ''; }
     else badge.style.display = 'none';
-
     document.title = pending > 0 ? `(${pending}) Slip Management` : 'Slip Management';
   }
 
@@ -485,16 +480,13 @@
     empty.style.display = 'none';
     tbody.innerHTML = data.map(d => {
       const isPending = d.status === '未確認';
-      const statusToggle = `<div class="status-toggle">
-        <button class="status-toggle-btn pending ${isPending?'active':''}" onclick="event.stopPropagation();toggleStatus(${d.row},'未確認',this)">● Unconfirmed</button>
-        <button class="status-toggle-btn done ${!isPending?'active':''}" onclick="event.stopPropagation();toggleStatus(${d.row},'確認済み',this)">● Confirmed</button>
-      </div>`;
+      const statusToggle = `<div class="status-toggle"><button class="status-toggle-btn pending ${isPending?'active':''}" onclick="event.stopPropagation();toggleStatus(${d.row},'未確認',this)">● Unconfirmed</button><button class="status-toggle-btn done ${!isPending?'active':''}" onclick="event.stopPropagation();toggleStatus(${d.row},'確認済み',this)">● Confirmed</button></div>`;
       const name = `<div class="sender-name">${esc(d.name)||'(unknown)'}</div>`;
       const slip = d.amount
-        ? `<div class="slip-row"><span class="slip-amount">${esc(d.amount)}</span><span class="slip-sep">|</span><span class="slip-name">${esc(d.slipName||'')}</span><button class="copy-btn" onclick="event.stopPropagation();copyText('${esc(d.amount)} | ${esc(d.slipDate||'')} | ${esc(d.slipName||'')}')">📋</button></div>`
+        ? `<div class="slip-row"><span class="slip-amount">${esc(d.amount)}</span><span class="slip-sep">|</span><span class="slip-name">${esc(d.slipName||'')}</span><button class="copy-btn" onclick="event.stopPropagation();copyText('${esc(d.amount)} | ${esc(d.slipDate||'')} | ${esc(d.slipName||'')}'  )">📋</button></div>`
         : `<button class="read-btn" onclick="event.stopPropagation();quickRead(${d.row},this)">🔍 Read / อ่าน</button>`;
       const img = `<span class="img-chip" onclick="event.stopPropagation();previewImg('${esc(driveImageUrl(d.driveUrl))}')">📎 View</span>`;
-      return `<tr class="${isPending?'':'done-row'}" onclick="openModal(${d.row})"><td>${statusToggle}</td><td>${name}</td><td>${slip}</td><td>${img}</td><td class="date-cell">${formatDate(d.receivedAt)}</td></tr>`;
+      return `<tr class="${isPending?''  :'done-row'}" onclick="openModal(${d.row})"  ><td>${statusToggle}</td><td>${name}</td><td>${slip}</td><td>${img}</td><td class="date-cell">${formatDate(d.receivedAt)}</td></tr>`;
     }).join('');
   }
 
@@ -583,8 +575,7 @@
       if (json.status === 'ok') {
         const memo = document.getElementById('modalNote').value;
         try { await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent('確認済み')}&memo=${encodeURIComponent(memo)}`, { mode: 'no-cors' }); } catch(e) {}
-        currentSlip.status = '確認済み';
-        currentSlip.memo = memo;
+        currentSlip.status = '確認済み'; currentSlip.memo = memo;
         closeModal();
         showToast('✉️ メール送信 & 確認済みに更新しました');
         await loadData();
