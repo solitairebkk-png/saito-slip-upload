@@ -14,6 +14,7 @@
     --muted: #8492a6; --text: #1a2233; --text2: #4a5568;
     --red: #e03c3c; --red-dim: rgba(224,60,60,0.08);
     --yellow: #F5C200; --yellow-dim: rgba(245,194,0,0.12);
+    --orange: #f97316; --orange-dim: rgba(249,115,22,0.1);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Noto Sans JP', 'Noto Sans Thai', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
@@ -32,12 +33,24 @@
   .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px 24px; min-width: 150px; }
   .stat-card.pending { border-left: 3px solid var(--red); }
   .stat-card.done { border-left: 3px solid var(--ok); }
+  .stat-card.sms { border-left: 3px solid var(--orange); }
   .stat-num { font-size: 32px; font-weight: 700; font-family: 'DM Mono', monospace; line-height: 1; }
   .stat-card.pending .stat-num { color: var(--red); }
   .stat-card.done .stat-num { color: var(--ok); }
+  .stat-card.sms .stat-num { color: var(--orange); }
   .stat-label { font-size: 12px; color: var(--muted); margin-top: 6px; }
 
-  .toolbar { padding: 0 32px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  /* タブ */
+  .tab-bar { padding: 0 32px; display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0; }
+  .tab-btn { padding: 14px 28px; border: none; background: transparent; color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
+  .tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
+  .tab-btn:hover:not(.active) { color: var(--text2); }
+  .tab-badge { background: var(--red); color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 11px; font-weight: 700; }
+  .tab-badge.orange { background: var(--orange); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .toolbar { padding: 16px 32px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .filter-group { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 4px; }
   .filter-btn { padding: 6px 16px; border: none; background: transparent; color: var(--text2); border-radius: 7px; font-size: 13px; cursor: pointer; transition: all 0.15s; font-weight: 500; }
   .filter-btn.active { background: var(--teal); color: #fff; }
@@ -73,6 +86,23 @@
   .read-btn:hover { background: var(--teal); color: #fff; }
   .read-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+  /* SMS タブ */
+  .sms-toolbar { padding: 16px 32px 12px; display: flex; align-items: center; gap: 12px; }
+  .sms-date-group { padding: 0 32px 24px; }
+  .sms-date-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; padding: 10px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
+  .sms-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; transition: background 0.1s; }
+  .sms-card:hover { background: var(--surface2); }
+  .sms-amount { font-size: 18px; font-weight: 700; color: var(--orange); font-family: 'DM Mono', monospace; min-width: 100px; }
+  .sms-meta { display: flex; flex-direction: column; gap: 3px; flex: 1; }
+  .sms-meta-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .sms-bank { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.25); border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
+  .sms-ref { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text2); }
+  .sms-acc { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); }
+  .sms-time { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .sms-raw { font-size: 11px; color: var(--muted); margin-top: 4px; word-break: break-all; }
+  .sms-copy-btn { padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; white-space: nowrap; }
+  .sms-copy-btn:hover { border-color: var(--orange); color: var(--orange); }
+
   /* MODAL */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-overlay.show { opacity: 1; pointer-events: all; }
@@ -107,7 +137,6 @@
   .mail-input:focus { border-color: var(--yellow); }
   .template-select { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 12px; border-radius: 8px; font-size: 13px; outline: none; width: 100%; font-family: inherit; cursor: pointer; }
   .template-select:focus { border-color: var(--yellow); }
-  /* ★ mail-preview を textarea に変更 */
   .mail-preview { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--text); line-height: 1.7; min-height: 120px; width: 100%; resize: vertical; font-family: inherit; outline: none; }
   .mail-preview:focus { border-color: var(--yellow); }
   .mail-preview-label { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
@@ -150,7 +179,7 @@
   </div>
   <div class="header-right">
     <span class="last-updated" id="lastUpdated">---</span>
-    <button class="btn-refresh" id="fetchBtn" onclick="loadData()">
+    <button class="btn-refresh" id="fetchBtn" onclick="loadAll()">
       <span id="fetchIcon">↻</span> Refresh / รีเฟรช
     </button>
   </div>
@@ -158,23 +187,46 @@
 
 <div class="stats-bar" id="statsBar"></div>
 
-<div class="toolbar">
-  <div class="filter-group">
-    <button class="filter-btn active" onclick="setFilter('all',this)">All / ทั้งหมด</button>
-    <button class="filter-btn" onclick="setFilter('未確認',this)">Unconfirmed / ยังไม่ยืนยัน</button>
-    <button class="filter-btn" onclick="setFilter('確認済み',this)">Confirmed / ยืนยันแล้ว</button>
-  </div>
-  <input type="text" class="search-input" placeholder="🔍 Search name / amount...">
+<!-- タブ -->
+<div class="tab-bar">
+  <button class="tab-btn active" onclick="switchTab('slips',this)" id="tab-slips">
+    📋 Slips <span class="tab-badge" id="badge-slips" style="display:none"></span>
+  </button>
+  <button class="tab-btn" onclick="switchTab('sms',this)" id="tab-sms">
+    📱 SCB SMS <span class="tab-badge orange" id="badge-sms" style="display:none"></span>
+  </button>
 </div>
 
-<div class="table-wrap">
-  <table>
-    <thead id="tableHead"></thead>
-    <tbody id="tableBody"></tbody>
-  </table>
-  <div class="empty" id="emptyState" style="display:none;">
-    <div class="empty-icon">📭</div>
-    <div>No slips yet / ยังไม่มีสลิป</div>
+<!-- Slipsタブ -->
+<div class="tab-panel active" id="panel-slips">
+  <div class="toolbar">
+    <div class="filter-group">
+      <button class="filter-btn active" onclick="setFilter('all',this)">All / ทั้งหมด</button>
+      <button class="filter-btn" onclick="setFilter('未確認',this)">Unconfirmed / ยังไม่ยืนยัน</button>
+      <button class="filter-btn" onclick="setFilter('確認済み',this)">Confirmed / ยืนยันแล้ว</button>
+    </div>
+    <input type="text" class="search-input" placeholder="🔍 Search name / amount...">
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead id="tableHead"></thead>
+      <tbody id="tableBody"></tbody>
+    </table>
+    <div class="empty" id="emptyState" style="display:none;">
+      <div class="empty-icon">📭</div>
+      <div>No slips yet / ยังไม่มีสลิป</div>
+    </div>
+  </div>
+</div>
+
+<!-- SMSタブ -->
+<div class="tab-panel" id="panel-sms">
+  <div class="sms-toolbar">
+    <span style="font-size:13px;color:var(--muted);">直近3日分のSCB入金通知 / SCB notifications (last 3 days)</span>
+    <span id="smsCount" style="font-size:13px;font-weight:600;color:var(--orange);margin-left:auto;"></span>
+  </div>
+  <div id="smsContent" class="sms-date-group">
+    <div class="empty"><div class="empty-icon">📱</div><div>Loading...</div></div>
   </div>
 </div>
 
@@ -193,7 +245,6 @@
         <div class="meta-item"><label>Order Ref</label><span id="mRef"></span></div>
         <div class="meta-item" style="grid-column:1/-1"><label>Email / เมล</label><span id="mEmail" style="font-size:13px;word-break:break-all;"></span></div>
       </div>
-
       <div>
         <div class="section-label">💡 Slip Data / ข้อมูลสลิป</div>
         <div class="slip-info-box">
@@ -210,33 +261,23 @@
           <span id="readContent">🔍 Re-read with Claude AI / อ่านซ้ำด้วย Claude AI</span>
         </button>
       </div>
-
       <div>
         <div class="section-label">📎 Slip Image / รูปสลิป</div>
         <img class="img-preview" id="slipImg" src="" onclick="openLightbox(this.src)" alt="">
       </div>
-
       <div>
         <div class="section-label">Status / สถานะ</div>
         <div style="display:flex;gap:8px;">
-          <button class="status-toggle-btn pending" id="modal-btn-pending" onclick="setModalStatus('未確認')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);">
-            🔴 Unconfirmed / ยังไม่ยืนยัน
-          </button>
-          <button class="status-toggle-btn done" id="modal-btn-done" onclick="setModalStatus('確認済み')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);">
-            🟢 Confirmed / ยืนยันแล้ว
-          </button>
+          <button class="status-toggle-btn pending" id="modal-btn-pending" onclick="setModalStatus('未確認')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);">🔴 Unconfirmed / ยังไม่ยืนยัน</button>
+          <button class="status-toggle-btn done" id="modal-btn-done" onclick="setModalStatus('確認済み')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);">🟢 Confirmed / ยืนยันแล้ว</button>
         </div>
       </div>
-
-      <!-- メール送信セクション -->
       <div class="mail-section">
         <div class="section-label">✉️ 入金確認メールを送る / Send Confirmation Email</div>
-
         <div class="mail-to-row">
           <label>送信先メールアドレス</label>
           <input type="email" class="mail-input" id="mailTo" placeholder="customer@example.com">
         </div>
-
         <div>
           <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px;">定型文を選択</label>
           <select class="template-select" id="templateSelect" onchange="applyTemplate()">
@@ -246,8 +287,6 @@
             <option value="3">⚠️ 量り売り：金額が超過しています（返金先口座のご案内）</option>
           </select>
         </div>
-
-        <!-- 金額入力欄（テンプレート2・3のみ表示） -->
         <div id="amountRow" style="display:none;flex-direction:column;gap:8px;">
           <div class="mail-amount-row">
             <label>スリップ読取金額</label>
@@ -265,27 +304,21 @@
             <span style="font-size:13px;color:var(--muted);">baht</span>
           </div>
         </div>
-
         <div>
-          <!-- ★ ラベルにリセットボタンを追加 -->
           <div class="mail-preview-label">
             <span>送信内容（直接編集できます）</span>
             <button class="mail-reset-btn" onclick="applyTemplate()">↺ テンプレートに戻す</button>
           </div>
-          <!-- ★ div → textarea に変更 -->
           <textarea class="mail-preview" id="mailPreview" rows="6"></textarea>
         </div>
-
         <button class="send-mail-btn" id="sendMailBtn" onclick="sendMail()">
           <span id="sendMailContent">📨 メールを送信する</span>
         </button>
       </div>
-
       <div>
         <div class="section-label">Note / หมายเหตุ</div>
         <textarea class="note-input" id="modalNote" placeholder="Note / หมายเหตุ..."></textarea>
       </div>
-
       <button class="save-btn" onclick="saveStatus()">Save / บันทึก</button>
     </div>
   </div>
@@ -300,9 +333,11 @@
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbwhV5IKDbadgS7-nAEo8At2sc6KlFLhDUtckURVUNOUsuHZy76NZQF7LzKxRnOJ1gc/exec';
 
   let allData = [];
+  let allSmsData = [];
   let currentFilter = 'all';
   let currentSlip = null;
   let currentStatus = '';
+  let activeTab = 'slips';
 
   const TEMPLATES = [
     { needsAmount: false, body: `お振込みありがとうございました。\n配送させていただきます。` },
@@ -311,116 +346,121 @@
     { needsAmount: true, body: (amt) => `量り売りの商品がございまして最終的な合計金額が変更になりお代金が${amt}baht超過していました。お手数ですが、ご返金先の銀行口座をご指示頂けますでしょうか？ポイントとしてご返金も可能です。ご指示をお待ちしております。` },
   ];
 
-  function calcDiff() {
-    const slip = parseFloat(document.getElementById('slipAmountInput').value) || 0;
-    const charge = parseFloat(document.getElementById('chargeAmountInput').value) || 0;
-    const diffRow = document.getElementById('diffRow');
-    const diffDisplay = document.getElementById('diffDisplay');
-    if (slip > 0 && charge > 0) {
-      const diff = Math.abs(charge - slip);
-      diffRow.style.display = 'flex';
-      diffDisplay.textContent = diff;
-      diffDisplay.style.color = diff === 0 ? 'var(--ok)' : 'var(--red)';
-    } else {
-      diffRow.style.display = 'none';
-    }
-    applyTemplate();
+  // ===== タブ切り替え =====
+  function switchTab(tab, btn) {
+    activeTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('panel-' + tab).classList.add('active');
+    if (tab === 'sms' && allSmsData.length === 0) loadSms();
   }
 
-  function applyTemplate() {
-    const idx = parseInt(document.getElementById('templateSelect').value);
-    const tmpl = TEMPLATES[idx];
-    const amountRow = document.getElementById('amountRow');
-    const preview = document.getElementById('mailPreview');
-    const name = currentSlip ? currentSlip.name : '';
-
-    if (tmpl.needsAmount) {
-      amountRow.style.display = 'flex';
-      const slip = parseFloat(document.getElementById('slipAmountInput').value) || 0;
-      const charge = parseFloat(document.getElementById('chargeAmountInput').value) || 0;
-      const diff = (slip > 0 && charge > 0) ? Math.abs(charge - slip) : 0;
-      const amt = diff > 0 ? diff : '〇〇';
-      // ★ value に変更
-      preview.value = `${name} 様\n\n${tmpl.body(amt)}\n\nサイトウフーズ`;
-    } else {
-      amountRow.style.display = 'none';
-      // ★ value に変更
-      preview.value = `${name} 様\n\n${tmpl.body}\n\nサイトウフーズ`;
-    }
-  }
-
-  async function sendMail() {
-    const toEmail = document.getElementById('mailTo').value.trim();
-    if (!toEmail) { showToast('送信先メールアドレスを入力してください', true); return; }
-
-    // ★ textarea の value をそのまま送信本文として使う（編集内容を反映）
-    const fullBody = document.getElementById('mailPreview').value.trim();
-    if (!fullBody) { showToast('送信内容を入力してください', true); return; }
-
-    // 量り売りテンプレートの場合は差額チェック
-    const idx = parseInt(document.getElementById('templateSelect').value);
-    const tmpl = TEMPLATES[idx];
-    if (tmpl.needsAmount) {
-      const slip = parseFloat(document.getElementById('slipAmountInput').value) || 0;
-      const charge = parseFloat(document.getElementById('chargeAmountInput').value) || 0;
-      if (!slip || !charge) { showToast('スリップ金額と請求金額を入力してください', true); return; }
-      if (Math.abs(charge - slip) === 0) { showToast('差額が0です。金額を確認してください', true); return; }
-    }
-
-    const btn = document.getElementById('sendMailBtn');
-    btn.disabled = true;
-    document.getElementById('sendMailContent').innerHTML = '<span class="spinner"></span> 送信中...';
-
-    try {
-      // ★ GASのsendMailはtoName + bodyを受け取る構造なので、
-      //    フルボディをそのまま渡す（toNameは空にしてbodyにフル文面を入れる）
-      const url = `${GAS_URL}?action=sendMail&toName=&toEmail=${encodeURIComponent(toEmail)}&body=${encodeURIComponent(fullBody)}`;
-      const res = await fetch(url);
-      const json = await res.json();
-      if (json.status === 'ok') {
-        const memo = document.getElementById('modalNote').value;
-        try {
-          await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent('確認済み')}&memo=${encodeURIComponent(memo)}`, { mode: 'no-cors' });
-        } catch(e) {}
-        currentSlip.status = '確認済み';
-        currentSlip.memo = memo;
-        closeModal();
-        showToast('✉️ メール送信 & 確認済みに更新しました');
-        await loadData();
-      } else {
-        showToast('送信エラー: ' + (json.message || ''), true);
-      }
-    } catch(e) {
-      showToast('送信エラー', true);
-    } finally {
-      btn.disabled = false;
-      document.getElementById('sendMailContent').textContent = '📨 メールを送信する';
-    }
-  }
-
-  async function loadData() {
+  // ===== 全データ読み込み =====
+  async function loadAll() {
     const icon = document.getElementById('fetchIcon');
     icon.innerHTML = '<span class="spinner spinner-teal"></span>';
+    await Promise.all([loadData(), loadSms()]);
+    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('en-GB');
+    icon.textContent = '↻';
+  }
+
+  // ===== スリップ読み込み =====
+  async function loadData() {
     try {
       const res = await fetch(GAS_URL + '?action=list');
       const json = await res.json();
       allData = json.data || [];
       updateStats();
-      document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('en-GB');
       renderTable();
+    } catch(e) { showToast('Load error', true); }
+  }
+
+  // ===== SMS読み込み =====
+  async function loadSms() {
+    try {
+      const res = await fetch(GAS_URL + '?action=smsList');
+      const json = await res.json();
+      allSmsData = json.data || [];
+      renderSms();
     } catch(e) {
-      showToast('Load error', true);
-    } finally {
-      icon.textContent = '↻';
+      document.getElementById('smsContent').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div>Load error</div></div>';
     }
+  }
+
+  // ===== SMS表示 =====
+  function renderSms() {
+    const container = document.getElementById('smsContent');
+    const countEl = document.getElementById('smsCount');
+
+    if (!allSmsData.length) {
+      container.innerHTML = '<div class="empty"><div class="empty-icon">📱</div><div>No SMS data yet / ยังไม่มีข้อมูล SMS</div></div>';
+      countEl.textContent = '';
+      const badge = document.getElementById('badge-sms');
+      badge.style.display = 'none';
+      return;
+    }
+
+    countEl.textContent = `${allSmsData.length}件`;
+    const badge = document.getElementById('badge-sms');
+    badge.textContent = allSmsData.length;
+    badge.style.display = '';
+
+    // 日付グループ分け
+    const groups = {};
+    allSmsData.forEach(s => {
+      const dateKey = s.received_at ? s.received_at.substring(0, 10) : 'Unknown';
+      if (!groups[dateKey]) groups[dateKey] = [];
+      groups[dateKey].push(s);
+    });
+
+    const today = new Date().toISOString().substring(0, 10);
+    const yesterday = new Date(Date.now() - 86400000).toISOString().substring(0, 10);
+
+    let html = '';
+    Object.keys(groups).sort().reverse().forEach(dateKey => {
+      let label = dateKey;
+      if (dateKey === today) label = `📅 Today / วันนี้ — ${dateKey}`;
+      else if (dateKey === yesterday) label = `📅 Yesterday / เมื่อวาน — ${dateKey}`;
+      else label = `📅 ${dateKey}`;
+
+      html += `<div class="sms-date-label">${label} <span style="color:var(--orange);font-weight:700;">(${groups[dateKey].length}件)</span></div>`;
+      groups[dateKey].forEach(s => {
+        const time = s.received_at ? s.received_at.substring(11, 16) : '';
+        const txTime = s.tx_date ? s.tx_date.substring(11) : '';
+        html += `
+          <div class="sms-card">
+            <div class="sms-amount">${s.amount ? Number(s.amount).toLocaleString() + ' ฿' : '---'}</div>
+            <div class="sms-meta">
+              <div class="sms-meta-row">
+                ${s.bank ? `<span class="sms-bank">${esc(s.bank)}</span>` : ''}
+                ${s.ref_code ? `<span class="sms-ref">${esc(s.ref_code)}</span>` : ''}
+                ${s.account_no ? `<span class="sms-acc">→ ${esc(s.account_no)}</span>` : ''}
+                <span class="sms-time">${txTime || time}</span>
+              </div>
+              <div class="sms-raw">${esc(s.raw_text || '')}</div>
+            </div>
+            <button class="sms-copy-btn" onclick="copyText('${esc(s.amount)} | ${esc(s.bank||'')} | ${esc(s.ref_code||'')} | ${esc(s.tx_date||'')}')">📋 Copy</button>
+          </div>`;
+      });
+    });
+
+    container.innerHTML = html;
   }
 
   function updateStats() {
     const pending = allData.filter(d => d.status === '未確認').length;
     const done = allData.filter(d => d.status === '確認済み').length;
+
     document.getElementById('statsBar').innerHTML = `
       <div class="stat-card pending"><div class="stat-num">${pending}</div><div class="stat-label">Unconfirmed / ยังไม่ยืนยัน</div></div>
-      <div class="stat-card done"><div class="stat-num">${done}</div><div class="stat-label">Confirmed / ยืนยันแล้ว</div></div>`;
+      <div class="stat-card done"><div class="stat-num">${done}</div><div class="stat-label">Confirmed / ยืนยันแล้ว</div></div>
+      <div class="stat-card sms"><div class="stat-num" id="smsStatNum">${allSmsData.length || '—'}</div><div class="stat-label">SCB SMS (3 days)</div></div>`;
+
+    const badge = document.getElementById('badge-slips');
+    if (pending > 0) { badge.textContent = pending; badge.style.display = ''; }
+    else badge.style.display = 'none';
+
     document.title = pending > 0 ? `(${pending}) Slip Management` : 'Slip Management';
   }
 
@@ -461,9 +501,7 @@
   async function toggleStatus(row, newStatus, btn) {
     const tr = btn.closest('tr');
     try {
-      try {
-        await fetch(`${GAS_URL}?action=updateStatus&row=${row}&status=${encodeURIComponent(newStatus)}`, { mode: 'no-cors' });
-      } catch(e) {}
+      try { await fetch(`${GAS_URL}?action=updateStatus&row=${row}&status=${encodeURIComponent(newStatus)}`, { mode: 'no-cors' }); } catch(e) {}
       const d = allData.find(x => x.row === row);
       if (d) d.status = newStatus;
       const toggle = btn.closest('.status-toggle');
@@ -489,6 +527,72 @@
     } catch(e) { showToast('Error', true); btn.disabled = false; btn.textContent = '🔍 Read / อ่าน'; }
   }
 
+  function calcDiff() {
+    const slip = parseFloat(document.getElementById('slipAmountInput').value) || 0;
+    const charge = parseFloat(document.getElementById('chargeAmountInput').value) || 0;
+    const diffRow = document.getElementById('diffRow');
+    const diffDisplay = document.getElementById('diffDisplay');
+    if (slip > 0 && charge > 0) {
+      const diff = Math.abs(charge - slip);
+      diffRow.style.display = 'flex';
+      diffDisplay.textContent = diff;
+      diffDisplay.style.color = diff === 0 ? 'var(--ok)' : 'var(--red)';
+    } else { diffRow.style.display = 'none'; }
+    applyTemplate();
+  }
+
+  function applyTemplate() {
+    const idx = parseInt(document.getElementById('templateSelect').value);
+    const tmpl = TEMPLATES[idx];
+    const amountRow = document.getElementById('amountRow');
+    const preview = document.getElementById('mailPreview');
+    const name = currentSlip ? currentSlip.name : '';
+    if (tmpl.needsAmount) {
+      amountRow.style.display = 'flex';
+      const slip = parseFloat(document.getElementById('slipAmountInput').value) || 0;
+      const charge = parseFloat(document.getElementById('chargeAmountInput').value) || 0;
+      const diff = (slip > 0 && charge > 0) ? Math.abs(charge - slip) : 0;
+      const amt = diff > 0 ? diff : '〇〇';
+      preview.value = `${name} 様\n\n${tmpl.body(amt)}\n\nサイトウフーズ`;
+    } else {
+      amountRow.style.display = 'none';
+      preview.value = `${name} 様\n\n${tmpl.body}\n\nサイトウフーズ`;
+    }
+  }
+
+  async function sendMail() {
+    const toEmail = document.getElementById('mailTo').value.trim();
+    if (!toEmail) { showToast('送信先メールアドレスを入力してください', true); return; }
+    const fullBody = document.getElementById('mailPreview').value.trim();
+    if (!fullBody) { showToast('送信内容を入力してください', true); return; }
+    const idx = parseInt(document.getElementById('templateSelect').value);
+    const tmpl = TEMPLATES[idx];
+    if (tmpl.needsAmount) {
+      const slip = parseFloat(document.getElementById('slipAmountInput').value) || 0;
+      const charge = parseFloat(document.getElementById('chargeAmountInput').value) || 0;
+      if (!slip || !charge) { showToast('スリップ金額と請求金額を入力してください', true); return; }
+      if (Math.abs(charge - slip) === 0) { showToast('差額が0です。金額を確認してください', true); return; }
+    }
+    const btn = document.getElementById('sendMailBtn');
+    btn.disabled = true;
+    document.getElementById('sendMailContent').innerHTML = '<span class="spinner"></span> 送信中...';
+    try {
+      const url = `${GAS_URL}?action=sendMail&toName=&toEmail=${encodeURIComponent(toEmail)}&body=${encodeURIComponent(fullBody)}`;
+      const res = await fetch(url);
+      const json = await res.json();
+      if (json.status === 'ok') {
+        const memo = document.getElementById('modalNote').value;
+        try { await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent('確認済み')}&memo=${encodeURIComponent(memo)}`, { mode: 'no-cors' }); } catch(e) {}
+        currentSlip.status = '確認済み';
+        currentSlip.memo = memo;
+        closeModal();
+        showToast('✉️ メール送信 & 確認済みに更新しました');
+        await loadData();
+      } else { showToast('送信エラー: ' + (json.message || ''), true); }
+    } catch(e) { showToast('送信エラー', true); }
+    finally { btn.disabled = false; document.getElementById('sendMailContent').textContent = '📨 メールを送信する'; }
+  }
+
   function esc(s) { return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;'); }
   function driveImageUrl(url) { const m = (url||'').match(/[-\w]{25,}/); return m ? `https://drive.google.com/thumbnail?id=${m[0]}&sz=w800` : url; }
   function formatDate(s) {
@@ -500,8 +604,7 @@
   function openModal(row) {
     const d = allData.find(x => x.row === row);
     if (!d) return;
-    currentSlip = d;
-    currentStatus = d.status;
+    currentSlip = d; currentStatus = d.status;
     document.getElementById('modalName').textContent = d.name || '(unknown)';
     document.getElementById('mName').textContent = d.name || '(unknown)';
     document.getElementById('mDate').textContent = formatDate(d.receivedAt);
@@ -566,13 +669,9 @@
     if (!currentSlip) return;
     const memo = document.getElementById('modalNote').value;
     try {
-      try {
-        await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent(currentStatus)}&memo=${encodeURIComponent(memo)}`, { mode: 'no-cors' });
-      } catch(e) {}
+      try { await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent(currentStatus)}&memo=${encodeURIComponent(memo)}`, { mode: 'no-cors' }); } catch(e) {}
       currentSlip.status = currentStatus; currentSlip.memo = memo;
-      closeModal();
-      showToast('Saved');
-      await loadData();
+      closeModal(); showToast('Saved'); await loadData();
     } catch(e) { showToast('Save error', true); }
   }
 
@@ -584,8 +683,8 @@
     setTimeout(() => t.classList.remove('show'), 3000);
   }
 
-  loadData();
-  setInterval(loadData, 60000);
+  loadAll();
+  setInterval(loadAll, 60000);
 </script>
 </body>
 </html>
