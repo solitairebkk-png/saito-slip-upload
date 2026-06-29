@@ -427,7 +427,7 @@
       html += `<div class="sms-date-label">${label} <span style="color:var(--orange);font-weight:700;">(${groups[dateKey].length}件)</span></div>`;
       groups[dateKey].forEach(s => {
         const time = s.received_at ? s.received_at.substring(11, 16) : '';
-        const txTime = s.tx_date ? s.tx_date.replace('T', ' ').substring(11, 16) : '';
+        const txTime = s.tx_date ? s.tx_date.slice(-5) : '';
         html += `
           <div class="sms-card">
             <div class="sms-amount">${s.amount ? Number(s.amount).toLocaleString() + ' ฿' : '---'}</div>
