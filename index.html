@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>お振込みスリップ送信 | サイトウフーズ</title>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <style>
   :root {
     --yellow: #F5C200;
@@ -39,6 +40,15 @@
   .qr-section { display: flex; flex-direction: column; align-items: center; gap: 16px; }
   .qr-image { width: 200px; height: 200px; border-radius: 12px; overflow: hidden; border: 2px solid var(--border); background: #fff; display: flex; align-items: center; justify-content: center; flex-direction: column; }
   .qr-image img { width: 100%; height: 100%; object-fit: contain; }
+  .amount-box { width: 100%; }
+  .amount-box label { display: block; font-size: 13px; font-weight: 700; color: var(--brown); margin-bottom: 8px; }
+  .amount-input-row { display: flex; align-items: center; gap: 8px; }
+  .amount-input-row .form-input { text-align: right; font-size: 18px; font-weight: 800; color: var(--orange); }
+  .amount-unit { font-size: 14px; font-weight: 700; color: var(--muted); flex-shrink: 0; }
+  .amount-hint { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.6; }
+  .qr-mode-badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 20px; }
+  .qr-mode-badge.dynamic { background: #e6fff5; color: var(--ok); }
+  .qr-mode-badge.static { background: #f0f0f0; color: var(--muted); }
   .account-box { width: 100%; background: var(--yellow-light); border: 1.5px solid var(--border); border-radius: 12px; padding: 16px; }
   .account-row { display: flex; justify-content: space-between; align-items: baseline; padding: 6px 0; border-bottom: 1px dashed #e0d090; }
   .account-row:last-child { border-bottom: none; }
@@ -100,13 +110,27 @@
   <div class="card">
     <div class="card-title" id="t-bank-title">🏦 振込先情報</div>
     <div class="qr-section">
+
+      <!-- ★ 金額入力(新規追加) -->
+      <div class="amount-box">
+        <label id="t-amount-field">💰 お支払い金額（メールに記載の金額を入力）</label>
+        <div class="amount-input-row">
+          <input type="number" class="form-input" id="amountInput" placeholder="660" min="0" inputmode="numeric">
+          <span class="amount-unit">THB</span>
+        </div>
+        <div class="amount-hint" id="t-amount-hint">金額を入力すると、その金額入りのQRコードが表示されます。</div>
+      </div>
+
       <div class="qr-image">
-        <img id="qrImg" src="./qr.jpg" onerror="this.style.display='none';document.getElementById('qrFallback').style.display='flex'" alt="QR">
+        <div id="qrDynamic" style="display:none;"></div>
+        <img id="qrImg" src="./qr.jpg" style="display:none;" onload="this.style.display='block';" onerror="this.style.display='none';document.getElementById('qrFallback').style.display='flex'" alt="QR">
         <div id="qrFallback" style="display:none;flex-direction:column;align-items:center;gap:8px;">
           <div style="font-size:48px">📱</div>
           <div style="font-size:11px;color:#bba870;text-align:center" id="t-qr-preparing">QRコード準備中</div>
         </div>
       </div>
+      <div id="qrModeBadge" class="qr-mode-badge static" style="display:none;"></div>
+
       <button onclick="downloadQR()" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:10px;background:#fffdf0;color:var(--orange);font-size:13px;font-weight:700;cursor:pointer;font-family:'M PLUS Rounded 1c',sans-serif;">
         📥 <span id="t-qr-download">QRコードを保存する</span>
       </button>
@@ -129,7 +153,7 @@
         </div>
         <div class="account-row">
           <span class="account-label">Biller ID</span>
-          <span class="account-value">0105554007919109</span>
+          <span class="account-value">010554007919109</span>
         </div>
       </div>
       <div class="notice-red">
@@ -189,6 +213,9 @@
       'title': '💳 お振込みスリップ送信',
       'subtitle': 'お振込み後、こちらのページからスリップ画像をお送りください。',
       'bank-title': '🏦 振込先情報', 'bank-label': '銀行', 'acct-label': '口座番号', 'name-label': '口座名義',
+      'amount-field': '💰 お支払い金額（メールに記載の金額を入力）',
+      'amount-hint': '金額を入力すると、その金額入りのQRコードが表示されます。',
+      'qr-mode-dynamic': '✓ この金額のQRコードです', 'qr-mode-static': '金額未入力（スキャン後に金額入力が必要です）',
       'warn-head': '⚠️ 量り売り商品をご注文の方へ',
       'warn-body': '量り売り商品が含まれる場合、重量確定後に最終金額をメールでご連絡いたします。重量確定後のメールに記載された金額をお振込みください。すでにお振込みいただいた場合、差額はご返金等で調整いたします。',
       'notice-head': '📌 お願い',
@@ -216,6 +243,9 @@
       'title': '💳 Upload Payment Slip',
       'subtitle': 'Please upload your transfer slip after making the payment.',
       'bank-title': '🏦 Bank Account Details', 'bank-label': 'Bank', 'acct-label': 'Account No.', 'name-label': 'Account Name',
+      'amount-field': '💰 Payment amount (enter the amount shown in your email)',
+      'amount-hint': 'Enter the amount to show a QR code pre-filled with that amount.',
+      'qr-mode-dynamic': '✓ QR code for this amount', 'qr-mode-static': 'No amount entered (you will need to enter it after scanning)',
       'warn-head': '⚠️ Note for Weight-Based Items',
       'warn-body': 'If your order includes items sold by weight, the final amount will be confirmed and sent to you by email after the weight is measured. Please transfer the amount stated in that email. If you have already transferred and there is a difference, we will refund or adjust accordingly.',
       'notice-head': '📌 Important',
@@ -243,6 +273,9 @@
       'title': '💳 ส่งสลิปการโอนเงิน',
       'subtitle': 'หลังโอนเงินแล้ว กรุณาส่งรูปสลิปผ่านหน้านี้',
       'bank-title': '🏦 ข้อมูลบัญชีธนาคาร', 'bank-label': 'ธนาคาร', 'acct-label': 'เลขบัญชี', 'name-label': 'ชื่อบัญชี',
+      'amount-field': '💰 จำนวนเงินที่ต้องชำระ (กรอกยอดตามที่ระบุในอีเมล)',
+      'amount-hint': 'กรอกจำนวนเงินเพื่อแสดง QR code พร้อมยอดที่ต้องชำระ',
+      'qr-mode-dynamic': '✓ QR code สำหรับยอดนี้', 'qr-mode-static': 'ยังไม่ได้กรอกยอด (ต้องกรอกยอดเองหลังสแกน)',
       'warn-head': '⚠️ สำหรับสินค้าที่ขายตามน้ำหนัก',
       'warn-body': 'หากมีสินค้าที่คิดราคาตามน้ำหนัก เราจะแจ้งยอดสุดท้ายทางอีเมลหลังจากชั่งน้ำหนักแล้ว กรุณาโอนตามยอดในอีเมลนั้น หากโอนไปแล้วและมีส่วนต่าง เราจะคืนเงินหรือปรับยอดให้',
       'notice-head': '📌 ข้อควรทราบ',
@@ -276,6 +309,7 @@
     event.target.classList.add('active');
     const t = LANG[lang];
     const ids = ['title','subtitle','bank-title','bank-label','acct-label','name-label',
+      'amount-field','amount-hint',
       'warn-head','warn-body','notice-head','notice-body','form-title',
       'name-field','email-field','file-field','drop-text','drop-sub',
       'qr-preparing','qr-download','cash-head','cash-body'];
@@ -302,9 +336,20 @@
     if (!document.getElementById('submitBtn').disabled) {
       document.getElementById('submitContent').textContent = '📨 ' + t['submit'].replace('📨 ','');
     }
+    updateQrModeBadge();
   }
 
   function downloadQR() {
+    if (qrCanvasActive) {
+      const canvas = document.querySelector('#qrDynamic canvas');
+      if (canvas) {
+        const a = document.createElement('a');
+        a.href = canvas.toDataURL('image/png');
+        a.download = 'saito-foods-qr.png';
+        a.click();
+        return;
+      }
+    }
     const img = document.getElementById('qrImg');
     const a = document.createElement('a');
     a.href = img.src;
@@ -314,6 +359,93 @@
 
   const params = new URLSearchParams(window.location.search);
   if (params.get('name')) document.getElementById('nameInput').value = decodeURIComponent(params.get('name'));
+
+  // ═══════════════════════════════════════════════
+  // PromptPay QR生成(EMVCo Merchant Presented QR仕様)
+  // rakugo.storeのorder.html / admin.htmlと同一のBiller ID・ターミナルIDを使用
+  // (同じSCB口座 071-296992-2 を共有しているため)
+  // ═══════════════════════════════════════════════
+  const PROMPTPAY_BILLER_ID = '010554007919109';
+  const PROMPTPAY_REF1 = 'REF001';
+  const PROMPTPAY_REF2 = 'REF002';
+  const PROMPTPAY_TERMINAL = 'IFB0639311943';
+
+  function tlv(tag, value) { return `${tag}${String(value.length).padStart(2,'0')}${value}`; }
+
+  function crc16(str) {
+    let crc = 0xFFFF;
+    for (let i = 0; i < str.length; i++) {
+      crc ^= (str.charCodeAt(i) << 8);
+      for (let j = 0; j < 8; j++) {
+        crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) & 0xFFFF : (crc << 1) & 0xFFFF;
+      }
+    }
+    return crc.toString(16).toUpperCase().padStart(4, '0');
+  }
+
+  function buildPromptPayPayload(amount) {
+    const merchantInfo = tlv('00', 'A000000677010112') + tlv('01', PROMPTPAY_BILLER_ID) + tlv('02', PROMPTPAY_REF1) + tlv('03', PROMPTPAY_REF2);
+    const amountStr = amount.toFixed(2);
+    const payload =
+      tlv('00', '01') +
+      tlv('01', '12') +
+      tlv('30', merchantInfo) +
+      tlv('53', '764') +
+      tlv('54', amountStr) +
+      tlv('58', 'TH') +
+      tlv('62', tlv('07', PROMPTPAY_TERMINAL));
+    const withCrcTag = payload + '6304';
+    return withCrcTag + crc16(withCrcTag);
+  }
+
+  let qrCanvasActive = false;
+
+  function updateQrModeBadge() {
+    const badge = document.getElementById('qrModeBadge');
+    const t = LANG[currentLang];
+    badge.style.display = 'inline-block';
+    if (qrCanvasActive) {
+      badge.className = 'qr-mode-badge dynamic';
+      badge.textContent = t['qr-mode-dynamic'];
+    } else {
+      badge.className = 'qr-mode-badge static';
+      badge.textContent = t['qr-mode-static'];
+    }
+  }
+
+  function renderQrForAmount() {
+    const raw = document.getElementById('amountInput').value;
+    const amount = parseFloat(raw);
+    const dynamicWrap = document.getElementById('qrDynamic');
+    const staticImg = document.getElementById('qrImg');
+
+    if (!raw || isNaN(amount) || amount <= 0) {
+      // 金額未入力 → 元の静的QR画像に戻す
+      qrCanvasActive = false;
+      dynamicWrap.style.display = 'none';
+      dynamicWrap.innerHTML = '';
+      staticImg.style.display = 'block';
+      updateQrModeBadge();
+      return;
+    }
+
+    dynamicWrap.innerHTML = '';
+    new QRCode(dynamicWrap, { text: buildPromptPayPayload(amount), width: 190, height: 190 });
+    dynamicWrap.style.display = 'flex';
+    staticImg.style.display = 'none';
+    qrCanvasActive = true;
+    updateQrModeBadge();
+  }
+
+  document.getElementById('amountInput').addEventListener('input', renderQrForAmount);
+  renderQrForAmount(); // 初期表示(金額未入力なら静止画QRを正しく表示する)
+
+  // メールのリンクに ?amount=660 のように付けて来た場合、自動で反映する
+  // (現状のEC-CUBE標準メールでは未対応だが、将来的な自動連携に備えて残しておく)
+  if (params.get('amount')) {
+    document.getElementById('amountInput').value = params.get('amount');
+    renderQrForAmount();
+  }
 
   const fileInput = document.getElementById('fileInput');
   const dropArea = document.getElementById('dropArea');
