@@ -339,9 +339,19 @@
     updateQrModeBadge();
   }
 
-  async function downloadQR() {
-    let blob = null;
+  function dataURLtoBlob(dataurl) {
+    const arr = dataurl.split(',');
+    const mime = arr[0].match(/:(.*?);/)[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) { u8arr[n] = bstr.charCodeAt(n); }
+    return new Blob([u8arr], { type: mime });
+  }
+
+  function downloadQR() {
     const filename = 'saito-foods-qr.jpg';
+    let dataUrl = null;
 
     if (qrCanvasActive) {
       const canvas = document.querySelector('#qrDynamic canvas');
@@ -355,35 +365,43 @@
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, out.width, out.height);
         ctx.drawImage(canvas, margin, margin);
-        blob = await new Promise(resolve => out.toBlob(resolve, 'image/jpeg', 0.92));
+        dataUrl = out.toDataURL('image/jpeg', 0.92);
       }
     }
 
-    if (!blob) {
+    if (!dataUrl) {
+      // 静的QR画像: 同一オリジンのimg要素をcanvasに描画してdataURL化
       const img = document.getElementById('qrImg');
       try {
-        const res = await fetch(img.src);
-        blob = await res.blob();
+        const c = document.createElement('canvas');
+        c.width = img.naturalWidth;
+        c.height = img.naturalHeight;
+        c.getContext('2d').drawImage(img, 0, 0);
+        dataUrl = c.toDataURL('image/jpeg', 0.92);
       } catch (e) {
-        blob = null;
+        // 描画できない場合は素直にimgのURLをダウンロードリンクにする
+        const a = document.createElement('a');
+        a.href = img.src;
+        a.download = filename;
+        a.click();
+        return;
       }
     }
-    if (!blob) return;
 
+    const blob = dataURLtoBlob(dataUrl);
     const file = new File([blob], filename, { type: 'image/jpeg' });
 
-    // iPhone等、共有シート経由の保存に対応している場合は「イメージを保存」でアルバムに直接保存できる
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      try {
-        await navigator.share({ files: [file] });
-        return;
-      } catch (e) {
-        // ユーザーがキャンセルした場合などはフォールバックへ進む
-      }
+    const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
+    const isMobile = isIOS || /Android/i.test(navigator.userAgent);
+
+    // 共有シートはスマホ(iPhone/Android)の時だけ使う。PCではOSの共有ダイアログが出るだけで
+    // 「アルバムに保存」に相当する項目が無いため、PCは常に通常のダウンロードにする
+    if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
+      navigator.share({ files: [file] }).catch(() => {});
+      return;
     }
 
     const url = URL.createObjectURL(blob);
-    const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
     if (isIOS) {
       // 共有シート非対応の古いSafari向け: 別タブで開いて長押し保存を案内
       window.open(url, '_blank');
