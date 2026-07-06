@@ -353,8 +353,8 @@
         ctx.fillRect(0, 0, out.width, out.height);
         ctx.drawImage(canvas, margin, margin);
         const a = document.createElement('a');
-        a.href = out.toDataURL('image/png');
-        a.download = 'saito-foods-qr.png';
+        a.href = out.toDataURL('image/jpeg', 0.92);
+        a.download = 'saito-foods-qr.jpg';
         a.click();
         return;
       }
@@ -551,5 +551,4 @@
   }
 </script>
 </body>
-
 </html>
