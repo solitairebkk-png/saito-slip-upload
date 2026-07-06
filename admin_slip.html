@@ -268,17 +268,6 @@
           <span id="readContent">🔍 Re-read with Claude AI / อ่านซ้ำด้วย Claude AI</span>
         </button>
       </div>
-      <div>
-        <div class="section-label">📎 Slip Image / รูปสลิป</div>
-        <img class="img-preview" id="slipImg" src="" onclick="openLightbox(this.src)" alt="">
-      </div>
-      <div>
-        <div class="section-label">Status / สถานะ</div>
-        <div style="display:flex;gap:8px;">
-          <button class="status-toggle-btn pending" id="modal-btn-pending" onclick="setModalStatus('未確認')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);">🔴 Unconfirmed / ยังไม่ยืนยัน</button>
-          <button class="status-toggle-btn done" id="modal-btn-done" onclick="setModalStatus('確認済み')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);">🟢 Confirmed / ยืนยันแล้ว</button>
-        </div>
-      </div>
       <div class="mail-section">
         <div class="section-label">✉️ 入金確認メールを送る / Send Confirmation Email</div>
         <div class="mail-to-row">
@@ -323,10 +312,21 @@
         </button>
       </div>
       <div>
+        <div class="section-label">Status / สถานะ</div>
+        <div style="display:flex;gap:8px;">
+          <button class="status-toggle-btn pending" id="modal-btn-pending" onclick="setModalStatus('未確認')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);">🔴 Unconfirmed / ยังไม่ยืนยัน</button>
+          <button class="status-toggle-btn done" id="modal-btn-done" onclick="setModalStatus('確認済み')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);">🟢 Confirmed / ยืนยันแล้ว</button>
+        </div>
+      </div>
+      <div>
         <div class="section-label">Note / หมายเหตุ</div>
         <textarea class="note-input" id="modalNote" placeholder="Note / หมายเหตุ..."></textarea>
       </div>
       <button class="save-btn" onclick="saveStatus()">Save / บันทึก</button>
+      <div>
+        <div class="section-label">📎 Slip Image / รูปสลิป</div>
+        <img class="img-preview" id="slipImg" src="" onclick="openLightbox(this.src)" alt="">
+      </div>
     </div>
   </div>
 </div>
@@ -617,6 +617,8 @@
     applyTemplate();
     updateModalStatusButtons(d.status);
     document.getElementById('modalOverlay').classList.add('show');
+    const modalEl = document.querySelector('.modal');
+    if (modalEl) modalEl.scrollTop = 0;
   }
 
   function setModalStatus(s) { currentStatus = s; updateModalStatusButtons(s); }
