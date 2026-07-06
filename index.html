@@ -339,7 +339,10 @@
     updateQrModeBadge();
   }
 
-  function downloadQR() {
+  async function downloadQR() {
+    let blob = null;
+    const filename = 'saito-foods-qr.jpg';
+
     if (qrCanvasActive) {
       const canvas = document.querySelector('#qrDynamic canvas');
       if (canvas) {
@@ -352,18 +355,51 @@
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, out.width, out.height);
         ctx.drawImage(canvas, margin, margin);
-        const a = document.createElement('a');
-        a.href = out.toDataURL('image/jpeg', 0.92);
-        a.download = 'saito-foods-qr.jpg';
-        a.click();
-        return;
+        blob = await new Promise(resolve => out.toBlob(resolve, 'image/jpeg', 0.92));
       }
     }
-    const img = document.getElementById('qrImg');
-    const a = document.createElement('a');
-    a.href = img.src;
-    a.download = 'saito-foods-qr.jpg';
-    a.click();
+
+    if (!blob) {
+      const img = document.getElementById('qrImg');
+      try {
+        const res = await fetch(img.src);
+        blob = await res.blob();
+      } catch (e) {
+        blob = null;
+      }
+    }
+    if (!blob) return;
+
+    const file = new File([blob], filename, { type: 'image/jpeg' });
+
+    // iPhone等、共有シート経由の保存に対応している場合は「イメージを保存」でアルバムに直接保存できる
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file] });
+        return;
+      } catch (e) {
+        // ユーザーがキャンセルした場合などはフォールバックへ進む
+      }
+    }
+
+    const url = URL.createObjectURL(blob);
+    const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
+    if (isIOS) {
+      // 共有シート非対応の古いSafari向け: 別タブで開いて長押し保存を案内
+      window.open(url, '_blank');
+      const msg = currentLang === 'ja'
+        ? '開いた画像を長押しして「イメージを保存」を選んでください。'
+        : currentLang === 'th'
+          ? 'กดค้างที่รูปภาพที่เปิดขึ้น แล้วเลือก "บันทึกรูปภาพ"'
+          : 'Long-press the opened image and choose "Save Image".';
+      alert(msg);
+    } else {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
   const params = new URLSearchParams(window.location.search);
