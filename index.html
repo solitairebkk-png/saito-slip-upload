@@ -343,8 +343,17 @@
     if (qrCanvasActive) {
       const canvas = document.querySelector('#qrDynamic canvas');
       if (canvas) {
+        // QRコード読み取りに必要な白い余白(クワイエットゾーン)を追加してから書き出す
+        const margin = 28;
+        const out = document.createElement('canvas');
+        out.width = canvas.width + margin * 2;
+        out.height = canvas.height + margin * 2;
+        const ctx = out.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, out.width, out.height);
+        ctx.drawImage(canvas, margin, margin);
         const a = document.createElement('a');
-        a.href = canvas.toDataURL('image/png');
+        a.href = out.toDataURL('image/png');
         a.download = 'saito-foods-qr.png';
         a.click();
         return;
