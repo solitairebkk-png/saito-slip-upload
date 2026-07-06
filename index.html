@@ -349,6 +349,30 @@
     return new Blob([u8arr], { type: mime });
   }
 
+  function showQrSaveOverlay(dataUrl) {
+    const old = document.getElementById('qrSaveOverlay');
+    if (old) old.remove();
+
+    const msg = currentLang === 'ja'
+      ? 'このQRコードを長押しして「イメージを保存」を選んでください。'
+      : currentLang === 'th'
+        ? 'กดค้างที่ QR Code นี้ แล้วเลือก "บันทึกรูปภาพ"'
+        : 'Long-press this QR code and choose "Save Image".';
+    const closeLabel = currentLang === 'ja' ? '閉じる' : currentLang === 'th' ? 'ปิด' : 'Close';
+
+    const overlay = document.createElement('div');
+    overlay.id = 'qrSaveOverlay';
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:24px;';
+    overlay.innerHTML =
+      '<div style="background:#fff;padding:16px;border-radius:12px;">' +
+      '<img src="' + dataUrl + '" style="display:block;max-width:80vw;max-height:55vh;" />' +
+      '</div>' +
+      '<div style="color:#fff;font-size:14px;text-align:center;max-width:280px;line-height:1.6;">' + msg + '</div>' +
+      '<button id="qrSaveOverlayClose" style="padding:10px 28px;border-radius:20px;border:none;background:#fff;color:#333;font-weight:700;font-family:inherit;">' + closeLabel + '</button>';
+    document.body.appendChild(overlay);
+    document.getElementById('qrSaveOverlayClose').onclick = () => overlay.remove();
+  }
+
   function downloadQR() {
     const filename = 'saito-foods-qr.jpg';
     let dataUrl = null;
@@ -388,35 +412,30 @@
       }
     }
 
-    const blob = dataURLtoBlob(dataUrl);
-    const file = new File([blob], filename, { type: 'image/jpeg' });
-
     const isIOS = /iP(hone|od|ad)/.test(navigator.userAgent);
     const isMobile = isIOS || /Android/i.test(navigator.userAgent);
 
-    // 共有シートはスマホ(iPhone/Android)の時だけ使う。PCではOSの共有ダイアログが出るだけで
-    // 「アルバムに保存」に相当する項目が無いため、PCは常に通常のダウンロードにする
-    if (isMobile && navigator.canShare && navigator.canShare({ files: [file] })) {
-      navigator.share({ files: [file] }).catch(() => {});
+    if (isMobile) {
+      const blob = dataURLtoBlob(dataUrl);
+      const file = new File([blob], filename, { type: 'image/jpeg' });
+      // 共有シートに対応していれば「イメージを保存」でアルバムに直接保存できる
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file] }).catch(() => {});
+        return;
+      }
+      // 共有APIが使えないブラウザ(iOS Chromeなど)は、別タブを開かず
+      // その場に画像を表示して長押し保存してもらう
+      showQrSaveOverlay(dataUrl);
       return;
     }
 
+    // PC: 通常のファイルダウンロード
+    const blob = dataURLtoBlob(dataUrl);
     const url = URL.createObjectURL(blob);
-    if (isIOS) {
-      // 共有シート非対応の古いSafari向け: 別タブで開いて長押し保存を案内
-      window.open(url, '_blank');
-      const msg = currentLang === 'ja'
-        ? '開いた画像を長押しして「イメージを保存」を選んでください。'
-        : currentLang === 'th'
-          ? 'กดค้างที่รูปภาพที่เปิดขึ้น แล้วเลือก "บันทึกรูปภาพ"'
-          : 'Long-press the opened image and choose "Save Image".';
-      alert(msg);
-    } else {
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = filename;
-      a.click();
-    }
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
