@@ -100,7 +100,7 @@
   .sms-raw { font-size: 11px; color: var(--muted); margin-top: 4px; word-break: break-all; }
   .sms-copy-btn { padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; white-space: nowrap; }
   .sms-copy-btn:hover { border-color: var(--orange); color: var(--orange); }
-  .sms-search-wrap { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .sms-search-wrap { display: flex; align-items: center; gap: 8px; }
   .sms-search-input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 10px; font-size: 13px; outline: none; width: 200px; font-family: 'DM Mono', monospace; }
   .sms-search-input:focus { border-color: var(--orange); }
   .sms-search-clear { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px; line-height: 1; }
@@ -221,7 +221,7 @@
   <div class="sms-toolbar">
     <span style="font-size:13px;color:var(--muted);">直近3日分のSCB入金通知 / SCB notifications (last 3 days)</span>
     <span id="smsCount" style="font-size:13px;font-weight:600;color:var(--orange);margin-left:8px;"></span>
-    <div class="sms-search-wrap">
+    <div class="sms-search-wrap" style="margin-left:16px;">
       <input type="number" id="smsSearch" class="sms-search-input" placeholder="🔍 ค้นหายอด / Search amount..." oninput="renderSms()">
       <button class="sms-search-clear" onclick="clearSmsSearch()" title="Clear / ล้าง">✕</button>
     </div>
