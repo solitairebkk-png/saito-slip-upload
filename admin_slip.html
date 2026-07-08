@@ -84,12 +84,13 @@
   .read-btn { padding: 4px 10px; border: 1px solid var(--teal); border-radius: 6px; background: var(--teal-dim); color: var(--teal); font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
   .read-btn:hover { background: var(--teal); color: #fff; }
   .read-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .sms-toolbar { padding: 16px 32px 12px; display: flex; align-items: center; gap: 12px; }
+  .sms-toolbar { padding: 16px 32px 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .sms-date-group { padding: 0 32px 24px; }
   .sms-date-label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; padding: 10px 0 8px; border-bottom: 1px solid var(--border); margin-bottom: 8px; }
   .sms-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 12px 16px; margin-bottom: 8px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; transition: background 0.1s; }
   .sms-card:hover { background: var(--surface2); }
   .sms-amount { font-size: 18px; font-weight: 700; color: var(--orange); font-family: 'DM Mono', monospace; min-width: 100px; }
+  .sms-amount.highlight { background: var(--yellow-dim); border-radius: 6px; padding: 2px 8px; color: var(--orange); border: 1px solid rgba(245,194,0,0.4); }
   .sms-meta { display: flex; flex-direction: column; gap: 3px; flex: 1; }
   .sms-meta-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
   .sms-bank { background: var(--orange-dim); color: var(--orange); border: 1px solid rgba(249,115,22,0.25); border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 700; }
@@ -99,6 +100,11 @@
   .sms-raw { font-size: 11px; color: var(--muted); margin-top: 4px; word-break: break-all; }
   .sms-copy-btn { padding: 4px 10px; border: 1px solid var(--border); border-radius: 6px; background: transparent; color: var(--muted); font-size: 11px; cursor: pointer; white-space: nowrap; }
   .sms-copy-btn:hover { border-color: var(--orange); color: var(--orange); }
+  .sms-search-wrap { display: flex; align-items: center; gap: 8px; margin-left: auto; }
+  .sms-search-input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 8px 16px; border-radius: 10px; font-size: 13px; outline: none; width: 200px; font-family: 'DM Mono', monospace; }
+  .sms-search-input:focus { border-color: var(--orange); }
+  .sms-search-clear { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px; line-height: 1; }
+  .sms-search-clear:hover { color: var(--red); }
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-overlay.show { opacity: 1; pointer-events: all; }
   .modal { background: var(--surface); border-radius: 16px; width: 100%; max-width: 640px; max-height: 88vh; overflow-y: auto; transform: translateY(16px); transition: transform 0.2s; }
@@ -214,14 +220,17 @@
 <div class="tab-panel" id="panel-sms">
   <div class="sms-toolbar">
     <span style="font-size:13px;color:var(--muted);">直近3日分のSCB入金通知 / SCB notifications (last 3 days)</span>
-    <span id="smsCount" style="font-size:13px;font-weight:600;color:var(--orange);margin-left:auto;"></span>
+    <span id="smsCount" style="font-size:13px;font-weight:600;color:var(--orange);margin-left:8px;"></span>
+    <div class="sms-search-wrap">
+      <input type="number" id="smsSearch" class="sms-search-input" placeholder="🔍 ค้นหายอด / Search amount..." oninput="renderSms()">
+      <button class="sms-search-clear" onclick="clearSmsSearch()" title="Clear / ล้าง">✕</button>
+    </div>
   </div>
   <div id="smsContent" class="sms-date-group">
     <div class="empty"><div class="empty-icon">📱</div><div>Loading...</div></div>
   </div>
 </div>
 
-<!-- ★ NEW: メール管理タブ -->
 <div class="tab-panel" id="panel-mail">
   <div class="mail-iframe-wrap">
     <div class="iframe-loading" id="iframeLoading">
@@ -413,37 +422,81 @@
     }
   }
 
+  function clearSmsSearch() {
+    document.getElementById('smsSearch').value = '';
+    renderSms();
+  }
+
   function renderSms() {
     const container = document.getElementById('smsContent');
     const countEl = document.getElementById('smsCount');
-    if (!allSmsData.length) {
-      container.innerHTML = '<div class="empty"><div class="empty-icon">📱</div><div>No SMS data yet / ยังไม่มีข้อมูล SMS</div></div>';
-      countEl.textContent = '';
-      document.getElementById('badge-sms').style.display = 'none';
-      return;
+    const searchVal = (document.getElementById('smsSearch')?.value || '').trim();
+    const searchNum = searchVal ? parseFloat(searchVal) : null;
+
+    // フィルター
+    let data = allSmsData;
+    if (searchNum !== null && !isNaN(searchNum)) {
+      data = allSmsData.filter(s => {
+        const amt = Number(s.amount || 0);
+        return Math.abs(amt - searchNum) < 0.01;
+      });
     }
-    countEl.textContent = `${allSmsData.length}件`;
+
+    // バッジ更新
     const badge = document.getElementById('badge-sms');
     badge.textContent = allSmsData.length;
-    badge.style.display = '';
+    badge.style.display = allSmsData.length ? '' : 'none';
+
+    if (!data.length) {
+      container.innerHTML = `<div class="empty"><div class="empty-icon">${searchNum ? '🔍' : '📱'}</div><div>${searchNum ? 'ไม่พบยอด ' + searchNum + ' บ. / No results for ' + searchNum : 'No SMS data yet / ยังไม่มีข้อมูล SMS'}</div></div>`;
+      countEl.textContent = searchNum ? `0 / ${allSmsData.length}件` : '';
+      return;
+    }
+
+    countEl.textContent = searchNum ? `${data.length} / ${allSmsData.length}件` : `${allSmsData.length}件`;
+
+    // 日付グループ
     const groups = {};
-    allSmsData.forEach(s => {
+    data.forEach(s => {
       const dateKey = s.received_at ? s.received_at.substring(0, 10) : 'Unknown';
       if (!groups[dateKey]) groups[dateKey] = [];
       groups[dateKey].push(s);
     });
+
     const today = new Date().toISOString().substring(0, 10);
     const yesterday = new Date(Date.now() - 86400000).toISOString().substring(0, 10);
     let html = '';
+
     Object.keys(groups).sort().reverse().forEach(dateKey => {
-      let label = dateKey === today ? `📅 Today / วันนี้ — ${dateKey}` : dateKey === yesterday ? `📅 Yesterday / เมื่อวาน — ${dateKey}` : `📅 ${dateKey}`;
+      let label = dateKey === today
+        ? `📅 Today / วันนี้ — ${dateKey}`
+        : dateKey === yesterday
+        ? `📅 Yesterday / เมื่อวาน — ${dateKey}`
+        : `📅 ${dateKey}`;
       html += `<div class="sms-date-label">${label} <span style="color:var(--orange);font-weight:700;">(${groups[dateKey].length}件)</span></div>`;
       groups[dateKey].forEach(s => {
         const time = s.received_at ? s.received_at.substring(11, 16) : '';
         const txTime = s.tx_date ? s.tx_date.slice(-5) : '';
-        html += `<div class="sms-card"><div class="sms-amount">${s.amount ? Number(s.amount).toLocaleString() + ' ฿' : '---'}</div><div class="sms-meta"><div class="sms-meta-row">${s.bank ? `<span class="sms-bank">${esc(s.bank)}</span>` : ''}${s.ref_code ? `<span class="sms-ref">${esc(s.ref_code)}</span>` : ''}${s.account_no ? `<span class="sms-acc">→ ${esc(s.account_no)}</span>` : ''}<span class="sms-time">${txTime || time}</span></div><div class="sms-raw">${esc(s.raw_text || '')}</div></div><button class="sms-copy-btn" onclick="copyText('${esc(s.amount)} | ${esc(s.bank||'')} | ${esc(s.ref_code||'')} | ${esc(s.tx_date||'')}'  )">📋 Copy</button></div>`;
+        const isMatch = searchNum !== null && Math.abs(Number(s.amount || 0) - searchNum) < 0.01;
+        const amountClass = isMatch ? 'sms-amount highlight' : 'sms-amount';
+        const amountDisplay = s.amount ? Number(s.amount).toLocaleString() + ' ฿' : '---';
+        html += `
+          <div class="sms-card">
+            <div class="${amountClass}">${amountDisplay}</div>
+            <div class="sms-meta">
+              <div class="sms-meta-row">
+                ${s.bank ? `<span class="sms-bank">${esc(s.bank)}</span>` : ''}
+                ${s.ref_code ? `<span class="sms-ref">${esc(s.ref_code)}</span>` : ''}
+                ${s.account_no ? `<span class="sms-acc">→ ${esc(s.account_no)}</span>` : ''}
+                <span class="sms-time">${txTime || time}</span>
+              </div>
+              <div class="sms-raw">${esc(s.raw_text || '')}</div>
+            </div>
+            <button class="sms-copy-btn" onclick="copyText('${esc(s.amount)} | ${esc(s.bank||'')} | ${esc(s.ref_code||'')} | ${esc(s.tx_date||'')}')">📋 Copy</button>
+          </div>`;
       });
     });
+
     container.innerHTML = html;
   }
 
@@ -484,10 +537,10 @@
       const statusToggle = `<div class="status-toggle"><button class="status-toggle-btn pending ${isPending?'active':''}" onclick="event.stopPropagation();toggleStatus(${d.row},'未確認',this)">● Unconfirmed</button><button class="status-toggle-btn done ${!isPending?'active':''}" onclick="event.stopPropagation();toggleStatus(${d.row},'確認済み',this)">● Confirmed</button></div>`;
       const name = `<div class="sender-name">${esc(d.name)||'(unknown)'}</div>`;
       const slip = d.amount
-        ? `<div class="slip-row"><span class="slip-amount">${esc(d.amount)}</span><span class="slip-sep">|</span><span class="slip-name">${esc(d.slipName||'')}</span><button class="copy-btn" onclick="event.stopPropagation();copyText('${esc(d.amount)} | ${esc(d.slipDate||'')} | ${esc(d.slipName||'')}'  )">📋</button></div>`
+        ? `<div class="slip-row"><span class="slip-amount">${esc(d.amount)}</span><span class="slip-sep">|</span><span class="slip-name">${esc(d.slipName||'')}</span><button class="copy-btn" onclick="event.stopPropagation();copyText('${esc(d.amount)} | ${esc(d.slipDate||'')} | ${esc(d.slipName||'')}')">📋</button></div>`
         : `<button class="read-btn" onclick="event.stopPropagation();quickRead(${d.row},this)">🔍 Read / อ่าน</button>`;
       const img = `<span class="img-chip" onclick="event.stopPropagation();previewImg('${esc(driveImageUrl(d.driveUrl))}')">📎 View</span>`;
-      return `<tr class="${isPending?''  :'done-row'}" onclick="openModal(${d.row})"  ><td>${statusToggle}</td><td>${name}</td><td>${slip}</td><td>${img}</td><td class="date-cell">${formatDate(d.receivedAt)}</td></tr>`;
+      return `<tr class="${isPending?'':'done-row'}" onclick="openModal(${d.row})"><td>${statusToggle}</td><td>${name}</td><td>${slip}</td><td>${img}</td><td class="date-cell">${formatDate(d.receivedAt)}</td></tr>`;
     }).join('');
   }
 
