@@ -38,7 +38,7 @@
   .stat-card.done .stat-num { color: var(--ok); }
   .stat-card.sms .stat-num { color: var(--orange); }
   .stat-label { font-size: 12px; color: var(--muted); margin-top: 6px; }
-  .tab-bar { padding: 0 32px; display: flex; gap: 0; border-bottom: 2px solid var(--border); margin-bottom: 0; }
+  .tab-bar { padding: 0 32px; display: flex; gap: 0; border-bottom: 2px solid var(--border); }
   .tab-btn { padding: 14px 28px; border: none; background: transparent; color: var(--muted); font-size: 14px; font-weight: 600; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.15s; display: flex; align-items: center; gap: 8px; }
   .tab-btn.active { color: var(--teal); border-bottom-color: var(--teal); }
   .tab-btn.mail-tab.active { color: var(--purple); border-bottom-color: var(--purple); }
@@ -150,6 +150,16 @@
   .send-mail-btn { background: var(--yellow); color: #5c3a0a; border: none; padding: 11px 24px; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer; width: 100%; font-family: inherit; transition: opacity 0.15s; }
   .send-mail-btn:hover { opacity: 0.85; }
   .send-mail-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  /* ★ 添付ファイルエリア */
+  .attach-area { border: 1.5px dashed rgba(245,194,0,0.6); border-radius: 8px; padding: 10px 14px; cursor: pointer; background: #fffdf0; text-align: center; font-size: 13px; color: var(--muted); transition: all 0.15s; position: relative; }
+  .attach-area:hover { border-color: var(--yellow); background: var(--yellow-dim); color: var(--text); }
+  .attach-area input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .attach-list { display: flex; flex-direction: column; gap: 6px; }
+  .attach-item { display: flex; align-items: center; gap: 8px; background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; font-size: 12px; }
+  .attach-item-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text2); }
+  .attach-item-size { color: var(--muted); font-size: 11px; font-family: 'DM Mono', monospace; white-space: nowrap; }
+  .attach-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 14px; padding: 0 2px; line-height: 1; }
+  .attach-remove:hover { color: var(--red); }
   .lightbox { position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; cursor: zoom-out; }
   .lightbox.show { opacity: 1; pointer-events: all; }
   .lightbox img { max-width: 92vw; max-height: 92vh; object-fit: contain; border-radius: 8px; }
@@ -223,7 +233,7 @@
     <span id="smsCount" style="font-size:13px;font-weight:600;color:var(--orange);margin-left:8px;"></span>
     <div class="sms-search-wrap" style="margin-left:16px;">
       <input type="number" id="smsSearch" class="sms-search-input" placeholder="🔍 ค้นหายอด / Search amount..." oninput="renderSms()">
-      <button class="sms-search-clear" onclick="clearSmsSearch()" title="Clear / ล้าง">✕</button>
+      <button class="sms-search-clear" onclick="clearSmsSearch()" title="Clear">✕</button>
     </div>
   </div>
   <div id="smsContent" class="sms-date-group">
@@ -237,16 +247,11 @@
       <span class="spinner spinner-purple"></span>
       <span style="font-size:14px;color:var(--muted);">メール管理を読み込み中...</span>
     </div>
-    <iframe
-      id="mailIframe"
-      src="about:blank"
-      data-src="https://saito-foods-inquiry.onrender.com/"
-      onload="onIframeLoad()"
-      allow="clipboard-read; clipboard-write"
-    ></iframe>
+    <iframe id="mailIframe" src="about:blank" data-src="https://saito-foods-inquiry.onrender.com/" onload="onIframeLoad()" allow="clipboard-read; clipboard-write"></iframe>
   </div>
 </div>
 
+<!-- Modal -->
 <div class="modal-overlay" id="modalOverlay">
   <div class="modal">
     <div class="modal-header">
@@ -261,6 +266,7 @@
         <div class="meta-item"><label>Order Ref</label><span id="mRef"></span></div>
         <div class="meta-item" style="grid-column:1/-1"><label>Email / เมล</label><span id="mEmail" style="font-size:13px;word-break:break-all;"></span></div>
       </div>
+
       <div>
         <div class="section-label">💡 Slip Data / ข้อมูลสลิป</div>
         <div class="slip-info-box">
@@ -277,15 +283,16 @@
           <span id="readContent">🔍 Re-read with Claude AI / อ่านซ้ำด้วย Claude AI</span>
         </button>
       </div>
+
+      <!-- メール送信セクション -->
       <div class="mail-section">
-        <button class="send-mail-btn" id="sendMailBtn" onclick="sendMail()">
-          <span id="sendMailContent">📨 メールを送信する</span>
-        </button>
         <div class="section-label">✉️ 入金確認メールを送る / Send Confirmation Email</div>
+
         <div class="mail-to-row">
           <label>送信先メールアドレス</label>
           <input type="email" class="mail-input" id="mailTo" placeholder="customer@example.com">
         </div>
+
         <div>
           <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px;">定型文を選択</label>
           <select class="template-select" id="templateSelect" onchange="applyTemplate()">
@@ -295,6 +302,7 @@
             <option value="3">⚠️ 量り売り：金額が超過しています（返金先口座のご案内）</option>
           </select>
         </div>
+
         <div id="amountRow" style="display:none;flex-direction:column;gap:8px;">
           <div class="mail-amount-row">
             <label>スリップ読取金額</label>
@@ -312,6 +320,7 @@
             <span style="font-size:13px;color:var(--muted);">baht</span>
           </div>
         </div>
+
         <div>
           <div class="mail-preview-label">
             <span>送信内容（直接編集できます）</span>
@@ -319,7 +328,22 @@
           </div>
           <textarea class="mail-preview" id="mailPreview" rows="6"></textarea>
         </div>
+
+        <!-- ★ 添付ファイルエリア -->
+        <div>
+          <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:6px;">📎 添付ファイル（任意）</label>
+          <div class="attach-area" id="attachArea">
+            <input type="file" id="attachInput" multiple accept="image/*,application/pdf" onchange="onAttachChange(event)">
+            📎 ファイルをタップして選択（画像・PDF）
+          </div>
+          <div class="attach-list" id="attachList" style="margin-top:8px;"></div>
+        </div>
+
+        <button class="send-mail-btn" id="sendMailBtn" onclick="sendMail()">
+          <span id="sendMailContent">📨 メールを送信する</span>
+        </button>
       </div>
+
       <div>
         <div class="section-label">Status / สถานะ</div>
         <div style="display:flex;gap:8px;">
@@ -327,11 +351,14 @@
           <button class="status-toggle-btn done" id="modal-btn-done" onclick="setModalStatus('確認済み')" style="flex:1;padding:10px;border-radius:8px;border:1px solid var(--border);">🟢 Confirmed / ยืนยันแล้ว</button>
         </div>
       </div>
+
       <div>
         <div class="section-label">Note / หมายเหตุ</div>
         <textarea class="note-input" id="modalNote" placeholder="Note / หมายเหตุ..."></textarea>
       </div>
+
       <button class="save-btn" onclick="saveStatus()">Save / บันทึก</button>
+
       <div>
         <div class="section-label">📎 Slip Image / รูปสลิป</div>
         <img class="img-preview" id="slipImg" src="" onclick="openLightbox(this.src)" alt="">
@@ -355,6 +382,7 @@
   let currentStatus = '';
   let activeTab = 'slips';
   let mailIframeLoaded = false;
+  let attachedFiles = []; // ★ 添付ファイル管理
 
   const TEMPLATES = [
     { needsAmount: false, body: `お振込みありがとうございました。\n配送させていただきます。` },
@@ -363,6 +391,7 @@
     { needsAmount: true, body: (amt) => `量り売りの商品がございまして最終的な合計金額が変更になりお代金が${amt}baht超過していました。お手数ですが、ご返金先の銀行口座をご指示頂けますでしょうか？ポイントとしてご返金も可能です。ご指示をお待ちしております。` },
   ];
 
+  // ===== タブ =====
   function switchTab(tab, btn) {
     activeTab = tab;
     document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -393,6 +422,7 @@
 
   window.addEventListener('resize', () => { if (activeTab === 'mail') adjustIframeHeight(); });
 
+  // ===== データ読み込み =====
   async function loadAll() {
     const icon = document.getElementById('fetchIcon');
     icon.innerHTML = '<span class="spinner spinner-teal"></span>';
@@ -422,84 +452,63 @@
     }
   }
 
-  function clearSmsSearch() {
-    document.getElementById('smsSearch').value = '';
-    renderSms();
-  }
+  // ===== SMS =====
+  function clearSmsSearch() { document.getElementById('smsSearch').value = ''; renderSms(); }
 
   function renderSms() {
     const container = document.getElementById('smsContent');
     const countEl = document.getElementById('smsCount');
     const searchVal = (document.getElementById('smsSearch')?.value || '').trim();
     const searchNum = searchVal ? parseFloat(searchVal) : null;
-
-    // フィルター
     let data = allSmsData;
     if (searchNum !== null && !isNaN(searchNum)) {
-      data = allSmsData.filter(s => {
-        const amt = Number(s.amount || 0);
-        return Math.abs(amt - searchNum) < 0.01;
-      });
+      data = allSmsData.filter(s => Math.abs(Number(s.amount || 0) - searchNum) < 0.01);
     }
-
-    // バッジ更新
     const badge = document.getElementById('badge-sms');
     badge.textContent = allSmsData.length;
     badge.style.display = allSmsData.length ? '' : 'none';
-
     if (!data.length) {
-      container.innerHTML = `<div class="empty"><div class="empty-icon">${searchNum ? '🔍' : '📱'}</div><div>${searchNum ? 'ไม่พบยอด ' + searchNum + ' บ. / No results for ' + searchNum : 'No SMS data yet / ยังไม่มีข้อมูล SMS'}</div></div>`;
+      container.innerHTML = `<div class="empty"><div class="empty-icon">${searchNum ? '🔍' : '📱'}</div><div>${searchNum ? 'No results for ' + searchNum : 'No SMS data yet'}</div></div>`;
       countEl.textContent = searchNum ? `0 / ${allSmsData.length}件` : '';
       return;
     }
-
     countEl.textContent = searchNum ? `${data.length} / ${allSmsData.length}件` : `${allSmsData.length}件`;
-
-    // 日付グループ
     const groups = {};
     data.forEach(s => {
       const dateKey = s.received_at ? s.received_at.substring(0, 10) : 'Unknown';
       if (!groups[dateKey]) groups[dateKey] = [];
       groups[dateKey].push(s);
     });
-
     const today = new Date().toISOString().substring(0, 10);
     const yesterday = new Date(Date.now() - 86400000).toISOString().substring(0, 10);
     let html = '';
-
     Object.keys(groups).sort().reverse().forEach(dateKey => {
-      let label = dateKey === today
-        ? `📅 Today / วันนี้ — ${dateKey}`
-        : dateKey === yesterday
-        ? `📅 Yesterday / เมื่อวาน — ${dateKey}`
-        : `📅 ${dateKey}`;
+      let label = dateKey === today ? `📅 Today — ${dateKey}` : dateKey === yesterday ? `📅 Yesterday — ${dateKey}` : `📅 ${dateKey}`;
       html += `<div class="sms-date-label">${label} <span style="color:var(--orange);font-weight:700;">(${groups[dateKey].length}件)</span></div>`;
       groups[dateKey].forEach(s => {
-        const time = s.received_at ? s.received_at.substring(11, 16) : '';
         const txTime = s.tx_date ? s.tx_date.slice(-5) : '';
         const isMatch = searchNum !== null && Math.abs(Number(s.amount || 0) - searchNum) < 0.01;
         const amountClass = isMatch ? 'sms-amount highlight' : 'sms-amount';
         const amountDisplay = s.amount ? Number(s.amount).toLocaleString() + ' ฿' : '---';
-        html += `
-          <div class="sms-card">
-            <div class="${amountClass}">${amountDisplay}</div>
-            <div class="sms-meta">
-              <div class="sms-meta-row">
-                ${s.bank ? `<span class="sms-bank">${esc(s.bank)}</span>` : ''}
-                ${s.ref_code ? `<span class="sms-ref">${esc(s.ref_code)}</span>` : ''}
-                ${s.account_no ? `<span class="sms-acc">→ ${esc(s.account_no)}</span>` : ''}
-                <span class="sms-time">${txTime || time}</span>
-              </div>
-              <div class="sms-raw">${esc(s.raw_text || '')}</div>
+        html += `<div class="sms-card">
+          <div class="${amountClass}">${amountDisplay}</div>
+          <div class="sms-meta">
+            <div class="sms-meta-row">
+              ${s.bank ? `<span class="sms-bank">${esc(s.bank)}</span>` : ''}
+              ${s.ref_code ? `<span class="sms-ref">${esc(s.ref_code)}</span>` : ''}
+              ${s.account_no ? `<span class="sms-acc">→ ${esc(s.account_no)}</span>` : ''}
+              <span class="sms-time">${txTime}</span>
             </div>
-            <button class="sms-copy-btn" onclick="copyText('${esc(s.amount)} | ${esc(s.bank||'')} | ${esc(s.ref_code||'')} | ${esc(s.tx_date||'')}')">📋 Copy</button>
-          </div>`;
+            <div class="sms-raw">${esc(s.raw_text || '')}</div>
+          </div>
+          <button class="sms-copy-btn" onclick="copyText('${esc(s.amount)} | ${esc(s.bank||'')} | ${esc(s.ref_code||'')} | ${esc(s.tx_date||'')}')">📋 Copy</button>
+        </div>`;
       });
     });
-
     container.innerHTML = html;
   }
 
+  // ===== 統計 =====
   function updateStats() {
     const pending = allData.filter(d => d.status === '未確認').length;
     const done = allData.filter(d => d.status === '確認済み').length;
@@ -508,8 +517,7 @@
       <div class="stat-card done"><div class="stat-num">${done}</div><div class="stat-label">Confirmed / ยืนยันแล้ว</div></div>
       <div class="stat-card sms"><div class="stat-num" id="smsStatNum">${allSmsData.length || '—'}</div><div class="stat-label">SCB SMS (3 days)</div></div>`;
     const badge = document.getElementById('badge-slips');
-    if (pending > 0) { badge.textContent = pending; badge.style.display = ''; }
-    else badge.style.display = 'none';
+    if (pending > 0) { badge.textContent = pending; badge.style.display = ''; } else badge.style.display = 'none';
     document.title = pending > 0 ? `(${pending}) Slip Management` : 'Slip Management';
   }
 
@@ -573,6 +581,7 @@
     } catch(e) { showToast('Error', true); btn.disabled = false; btn.textContent = '🔍 Read / อ่าน'; }
   }
 
+  // ===== 差額計算 =====
   function calcDiff() {
     const slip = parseFloat(document.getElementById('slipAmountInput').value) || 0;
     const charge = parseFloat(document.getElementById('chargeAmountInput').value) || 0;
@@ -606,6 +615,45 @@
     }
   }
 
+  // ===== ★ 添付ファイル管理 =====
+  function onAttachChange(e) {
+    const files = Array.from(e.target.files);
+    files.forEach(f => {
+      if (!attachedFiles.find(x => x.name === f.name && x.size === f.size)) {
+        attachedFiles.push(f);
+      }
+    });
+    renderAttachList();
+    document.getElementById('attachInput').value = '';
+  }
+
+  function renderAttachList() {
+    const list = document.getElementById('attachList');
+    if (!attachedFiles.length) { list.innerHTML = ''; return; }
+    list.innerHTML = attachedFiles.map((f, i) => `
+      <div class="attach-item">
+        <span>${f.type.startsWith('image/') ? '🖼️' : '📄'}</span>
+        <span class="attach-item-name">${esc(f.name)}</span>
+        <span class="attach-item-size">${(f.size/1024).toFixed(0)}KB</span>
+        <button class="attach-remove" onclick="removeAttach(${i})">✕</button>
+      </div>`).join('');
+  }
+
+  function removeAttach(idx) {
+    attachedFiles.splice(idx, 1);
+    renderAttachList();
+  }
+
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => resolve(e.target.result.split(',')[1]);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // ===== メール送信（POST） =====
   async function sendMail() {
     const toEmail = document.getElementById('mailTo').value.trim();
     if (!toEmail) { showToast('送信先メールアドレスを入力してください', true); return; }
@@ -619,25 +667,53 @@
       if (!slip || !charge) { showToast('スリップ金額と請求金額を入力してください', true); return; }
       if (Math.abs(charge - slip) === 0) { showToast('差額が0です。金額を確認してください', true); return; }
     }
+
     const btn = document.getElementById('sendMailBtn');
     btn.disabled = true;
     document.getElementById('sendMailContent').innerHTML = '<span class="spinner"></span> 送信中...';
+
     try {
-      const url = `${GAS_URL}?action=sendMail&toName=&toEmail=${encodeURIComponent(toEmail)}&body=${encodeURIComponent(fullBody)}`;
-      const res = await fetch(url);
+      // 添付ファイルをBase64に変換
+      const attachments = await Promise.all(attachedFiles.map(async f => ({
+        fileName: f.name,
+        fileType: f.type || 'application/octet-stream',
+        fileData: await fileToBase64(f)
+      })));
+
+      const payload = {
+        action: 'sendMail',
+        toEmail,
+        toName: currentSlip ? currentSlip.name : '',
+        body: fullBody,
+        attachments
+      };
+
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify(payload)
+      });
       const json = await res.json();
+
       if (json.status === 'ok') {
+        // メール送信後に確認済みに更新
         const memo = document.getElementById('modalNote').value;
         try { await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent('確認済み')}&memo=${encodeURIComponent(memo)}`, { mode: 'no-cors' }); } catch(e) {}
         currentSlip.status = '確認済み'; currentSlip.memo = memo;
         closeModal();
         showToast('✉️ メール送信 & 確認済みに更新しました');
         await loadData();
-      } else { showToast('送信エラー: ' + (json.message || ''), true); }
-    } catch(e) { showToast('送信エラー', true); }
-    finally { btn.disabled = false; document.getElementById('sendMailContent').textContent = '📨 メールを送信する'; }
+      } else {
+        showToast('送信エラー: ' + (json.message || ''), true);
+      }
+    } catch(e) {
+      showToast('送信エラー', true);
+    } finally {
+      btn.disabled = false;
+      document.getElementById('sendMailContent').textContent = '📨 メールを送信する';
+    }
   }
 
+  // ===== ユーティリティ =====
   function esc(s) { return (s||'').toString().replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;'); }
   function driveImageUrl(url) { const m = (url||'').match(/[-\w]{25,}/); return m ? `https://drive.google.com/thumbnail?id=${m[0]}&sz=w800` : url; }
   function formatDate(s) {
@@ -667,6 +743,9 @@
     document.getElementById('chargeAmountInput').value = '';
     document.getElementById('diffRow').style.display = 'none';
     document.getElementById('templateSelect').value = '0';
+    // 添付ファイルリセット
+    attachedFiles = [];
+    renderAttachList();
     applyTemplate();
     updateModalStatusButtons(d.status);
     document.getElementById('modalOverlay').classList.add('show');
@@ -724,6 +803,7 @@
 
   function openLightbox(src) { document.getElementById('lightboxImg').src = src; document.getElementById('lightbox').classList.add('show'); }
   function closeLightbox() { document.getElementById('lightbox').classList.remove('show'); }
+
   function showToast(msg, isError=false) {
     const t = document.getElementById('toast');
     t.textContent = msg; t.className = 'toast' + (isError?' error':''); t.classList.add('show');
