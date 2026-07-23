@@ -105,9 +105,9 @@
   .sms-search-input:focus { border-color: var(--orange); }
   .sms-search-clear { background: none; border: none; color: var(--muted); font-size: 16px; cursor: pointer; padding: 4px; line-height: 1; }
   .sms-search-clear:hover { color: var(--red); }
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 200; display: flex; align-items: center; justify-content: flex-end; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-overlay.show { opacity: 1; pointer-events: all; }
-  .modal { background: var(--surface); border-radius: 16px; width: 100%; max-width: 640px; max-height: 88vh; overflow-y: auto; transform: translateY(16px); transition: transform 0.2s; }
+  .modal { background: var(--surface); border-radius: 16px; width: 100%; max-width: 560px; max-height: 88vh; overflow-y: auto; transform: translateY(16px); transition: transform 0.2s; margin-right: 4vw; }
   .modal-overlay.show .modal { transform: translateY(0); }
   .modal-header { padding: 20px 24px 16px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; position: sticky; top: 0; background: var(--surface); z-index: 1; }
   .modal-title { font-size: 16px; font-weight: 700; }
