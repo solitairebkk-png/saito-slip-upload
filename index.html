@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>お振込みスリップ送信 | サイトウフーズ</title>
 <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@400;500;700;800&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.0.3/qrcode.min.js"></script>
 <style>
   :root {
     --yellow: #F5C200;
@@ -121,7 +121,7 @@
 
       <div class="qr-image">
         <div id="qrDynamic" style="display:none;"></div>
-        <img id="qrImg" src="./qr.jpg" style="display:none;" onload="this.style.display='block';" onerror="this.style.display='none';document.getElementById('qrFallback').style.display='flex'" alt="QR">
+        <img id="qrImg" src="./qr.jpg" style="display:none;" onerror="this.style.display='none';document.getElementById('qrFallback').style.display='flex'" alt="QR">
         <div id="qrFallback" style="display:none;flex-direction:column;align-items:center;gap:8px;">
           <div style="font-size:48px">📱</div>
           <div style="font-size:11px;color:#bba870;text-align:center" id="t-qr-preparing">QRコード準備中</div>
@@ -358,19 +358,10 @@
     let dataUrl = null;
 
     if (qrCanvasActive) {
-      const canvas = document.querySelector('#qrDynamic canvas');
-      if (canvas) {
-        // QRコード読み取りに必要な白い余白(クワイエットゾーン)を追加してから書き出す
-        const margin = 28;
-        const out = document.createElement('canvas');
-        out.width = canvas.width + margin * 2;
-        out.height = canvas.height + margin * 2;
-        const ctx = out.getContext('2d');
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, out.width, out.height);
-        ctx.drawImage(canvas, margin, margin);
-        dataUrl = out.toDataURL('image/jpeg', 0.92);
-      }
+      const img = document.querySelector('#qrDynamic img');
+      // createDataURL()はクワイエットゾーン(白い余白)込みのdata URLをそのまま返すので、
+      // canvasに描き直す必要はない。
+      if (img && img.src) dataUrl = img.src;
     }
 
     if (!dataUrl) {
@@ -491,8 +482,12 @@
       return;
     }
 
-    dynamicWrap.innerHTML = '';
-    new QRCode(dynamicWrap, { text: buildPromptPayPayload(amount), width: 190, height: 190 });
+    // qrcode-generator(信頼性の高いライブラリ)でQRコードのdata URLを生成する。
+    // typeNumber 0 = データ長に応じて必要なQRバージョンを自動選択。
+    const qr = qrcode(0, 'M');
+    qr.addData(buildPromptPayPayload(amount));
+    qr.make();
+    dynamicWrap.innerHTML = `<img src="${qr.createDataURL(6, 4)}" alt="QR" style="width:100%;height:100%;">`;
     dynamicWrap.style.display = 'flex';
     staticImg.style.display = 'none';
     qrCanvasActive = true;
