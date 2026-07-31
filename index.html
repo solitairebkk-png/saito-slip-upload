@@ -57,8 +57,6 @@
   .account-value.big { font-size: 17px; color: var(--orange); letter-spacing: 0.04em; }
   .notice { background: #fff8d6; border-left: 3px solid var(--yellow-dark); border-radius: 8px; padding: 12px 14px; font-size: 12px; color: var(--brown); line-height: 1.7; }
   .notice strong { color: var(--orange); }
-  .notice-red { background: var(--red-dim); border-left: 3px solid var(--red); border-radius: 8px; padding: 12px 14px; font-size: 12px; color: var(--red); line-height: 1.8; }
-  .notice-red strong { font-weight: 800; }
   .form-group { margin-bottom: 18px; }
   .form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--brown); margin-bottom: 8px; }
   .required { color: var(--red); margin-left: 4px; font-size: 11px; }
@@ -156,10 +154,6 @@
           <span class="account-value">010554007919109</span>
         </div>
       </div>
-      <div class="notice-red">
-        <strong id="t-warn-head">⚠️ 量り売り商品をご注文の方へ</strong><br>
-        <span id="t-warn-body">量り売り商品が含まれる場合、重量確定後に最終金額をメールでご連絡いたします。<strong>重量確定後のメールに記載された金額</strong>をお振込みください。すでにお振込みいただいた場合、差額はご返金等で調整いたします。</span>
-      </div>
       <div class="notice">
         <strong id="t-notice-head">📌 お願い</strong><br>
         <span id="t-notice-body">お振込み後は必ずこのページからスリップ画像をお送りくださいませ。</span>
@@ -216,8 +210,6 @@
       'amount-field': '💰 お支払い金額（メールに記載の金額を入力）',
       'amount-hint': '金額を入力すると、その金額入りのQRコードが表示されます。',
       'qr-mode-dynamic': '✓ この金額のQRコードです', 'qr-mode-static': '金額未入力（スキャン後に金額入力が必要です）',
-      'warn-head': '⚠️ 量り売り商品をご注文の方へ',
-      'warn-body': '量り売り商品が含まれる場合、重量確定後に最終金額をメールでご連絡いたします。重量確定後のメールに記載された金額をお振込みください。すでにお振込みいただいた場合、差額はご返金等で調整いたします。',
       'notice-head': '📌 お願い',
       'notice-body': 'お振込み後は必ずこのページからスリップ画像をお送りください。スリップのご確認後、ご注文が確定となります。',
       'form-title': '📤 スリップを送る',
@@ -246,8 +238,6 @@
       'amount-field': '💰 Payment amount (enter the amount shown in your email)',
       'amount-hint': 'Enter the amount to show a QR code pre-filled with that amount.',
       'qr-mode-dynamic': '✓ QR code for this amount', 'qr-mode-static': 'No amount entered (you will need to enter it after scanning)',
-      'warn-head': '⚠️ Note for Weight-Based Items',
-      'warn-body': 'If your order includes items sold by weight, the final amount will be confirmed and sent to you by email after the weight is measured. Please transfer the amount stated in that email. If you have already transferred and there is a difference, we will refund or adjust accordingly.',
       'notice-head': '📌 Important',
       'notice-body': 'Please upload your slip from this page after transferring. Your order will be confirmed once we verify the payment.',
       'form-title': '📤 Send Your Slip',
@@ -276,8 +266,6 @@
       'amount-field': '💰 จำนวนเงินที่ต้องชำระ (กรอกยอดตามที่ระบุในอีเมล)',
       'amount-hint': 'กรอกจำนวนเงินเพื่อแสดง QR code พร้อมยอดที่ต้องชำระ',
       'qr-mode-dynamic': '✓ QR code สำหรับยอดนี้', 'qr-mode-static': 'ยังไม่ได้กรอกยอด (ต้องกรอกยอดเองหลังสแกน)',
-      'warn-head': '⚠️ สำหรับสินค้าที่ขายตามน้ำหนัก',
-      'warn-body': 'หากมีสินค้าที่คิดราคาตามน้ำหนัก เราจะแจ้งยอดสุดท้ายทางอีเมลหลังจากชั่งน้ำหนักแล้ว กรุณาโอนตามยอดในอีเมลนั้น หากโอนไปแล้วและมีส่วนต่าง เราจะคืนเงินหรือปรับยอดให้',
       'notice-head': '📌 ข้อควรทราบ',
       'notice-body': 'กรุณาส่งสลิปผ่านหน้านี้ทุกครั้งหลังโอนเงิน คำสั่งซื้อจะได้รับการยืนยันเมื่อเราตรวจสอบสลิปแล้ว',
       'form-title': '📤 ส่งสลิป',
@@ -310,21 +298,13 @@
     const t = LANG[lang];
     const ids = ['title','subtitle','bank-title','bank-label','acct-label','name-label',
       'amount-field','amount-hint',
-      'warn-head','warn-body','notice-head','notice-body','form-title',
+      'notice-head','notice-body','form-title',
       'name-field','email-field','file-field','drop-text','drop-sub',
       'qr-preparing','qr-download','cash-head','cash-body'];
     ids.forEach(id => {
       const el = document.getElementById('t-' + id);
       if (el) el.textContent = t[id];
     });
-    const warnBody = document.getElementById('t-warn-body');
-    if (lang === 'ja') {
-      warnBody.innerHTML = '量り売り商品が含まれる場合、重量確定後に最終金額をメールでご連絡いたします。<strong>重量確定後のメールに記載された金額</strong>をお振込みください。すでにお振込みいただいた場合、差額はご返金等で調整いたします。';
-    } else if (lang === 'en') {
-      warnBody.innerHTML = 'If your order includes items sold by weight, the final amount will be confirmed by email after weighing. Please transfer the amount stated in that email. If you have already transferred and there is a difference, we will refund or adjust accordingly.';
-    } else {
-      warnBody.innerHTML = 'หากมีสินค้าที่คิดราคาตามน้ำหนัก เราจะแจ้งยอดสุดท้ายทางอีเมลหลังชั่งน้ำหนัก กรุณาโอนตามยอดในอีเมลนั้น หากโอนไปแล้วและมีส่วนต่าง เราจะคืนเงินหรือปรับยอดให้';
-    }
     const nameLabel = document.getElementById('t-name-field');
     if (nameLabel) nameLabel.innerHTML = t['name-field'] + `<span class="required"> ${t['required']}</span>`;
     const emailLabel = document.getElementById('t-email-field');
