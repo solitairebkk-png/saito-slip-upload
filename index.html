@@ -359,8 +359,8 @@
 
     if (qrCanvasActive) {
       const img = document.querySelector('#qrDynamic img');
-      // createDataURL()はクワイエットゾーン(白い余白)込みのdata URLをそのまま返すので、
-      // canvasに描き直す必要はない。
+      // createImgTag()はクワイエットゾーン(白い余白)込みのdata URL(GIF)を
+      // 持つimgタグを返すので、そのsrcをそのまま使えばよい。
       if (img && img.src) dataUrl = img.src;
     }
 
@@ -482,12 +482,34 @@
       return;
     }
 
-    // qrcode-generator(信頼性の高いライブラリ)でQRコードのdata URLを生成する。
-    // typeNumber 0 = データ長に応じて必要なQRバージョンを自動選択。
-    const qr = qrcode(0, 'M');
-    qr.addData(buildPromptPayPayload(amount));
-    qr.make();
-    dynamicWrap.innerHTML = `<img src="${qr.createDataURL(6, 4)}" alt="QR" style="width:100%;height:100%;">`;
+    // qrcode-generatorでQRコードを生成する。
+    // 注意: このライブラリはtypeNumberに0(自動選択)を渡すと内部エラーで
+    // 落ちてしまうバグがあるため、容量が足りるtypeNumberを1から順に試す。
+    // createDataURL()は古いバージョンには存在しないため、createImgTag()
+    // (<img>タグの文字列をそのまま返す)を使う。
+    let qr = null;
+    for (let typeNumber = 1; typeNumber <= 40; typeNumber++) {
+      try {
+        const candidate = qrcode(typeNumber, 'M');
+        candidate.addData(buildPromptPayPayload(amount));
+        candidate.make();
+        qr = candidate;
+        break;
+      } catch (e) { /* 容量不足 → 次のtypeNumberを試す */ }
+    }
+    if (!qr) {
+      // 万一QR生成に失敗した場合は静止画にフォールバックする
+      qrCanvasActive = false;
+      dynamicWrap.style.display = 'none';
+      dynamicWrap.innerHTML = '';
+      staticImg.style.display = 'block';
+      updateQrModeBadge();
+      return;
+    }
+
+    dynamicWrap.innerHTML = qr.createImgTag(6, 4);
+    const dynImg = dynamicWrap.querySelector('img');
+    if (dynImg) dynImg.style.cssText = 'width:100%;height:100%;';
     dynamicWrap.style.display = 'flex';
     staticImg.style.display = 'none';
     qrCanvasActive = true;
