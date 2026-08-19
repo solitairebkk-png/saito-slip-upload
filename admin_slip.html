@@ -247,7 +247,7 @@
       <span class="spinner spinner-purple"></span>
       <span style="font-size:14px;color:var(--muted);">メール管理を読み込み中...</span>
     </div>
-    <iframe id="mailIframe" src="about:blank" data-src="https://saito-foods-inquiry.onrender.com/" onload="onIframeLoad()" allow="clipboard-read; clipboard-write"></iframe>
+    <iframe id="mailIframe" src="about:blank" data-src="https://saito-foods-inquiry.onrender.com/" allow="clipboard-read; clipboard-write"></iframe>
   </div>
 </div>
 
@@ -406,10 +406,14 @@
     if (tab === 'mail') adjustIframeHeight();
   }
 
+  // iframeのonloadはHTML属性ではなくJS側でaddEventListenerする
+  // (about:blankの読み込み完了がスクリプト実行前に発火し、
+  //  onIframeLoad未定義エラーになるのを防ぐため)
   function onIframeLoad() {
     document.getElementById('iframeLoading').classList.add('hidden');
     adjustIframeHeight();
   }
+  document.getElementById('mailIframe').addEventListener('load', onIframeLoad);
 
   function adjustIframeHeight() {
     const iframe = document.getElementById('mailIframe');
@@ -809,8 +813,17 @@
     setTimeout(() => t.classList.remove('show'), 3000);
   }
 
+  // ===== 自動更新（タブが表示中の時だけ実行） =====
+  // 複数タブ・複数端末で開きっぱなしになると、それぞれが独立して
+  // 60秒ごとにGASへアクセスし続け、同時アクセスが積み重なって
+  // GAS側の実行制限に触れやすくなるため、非表示タブでは更新を止める。
   loadAll();
-  setInterval(loadAll, 60000);
+  setInterval(() => {
+    if (document.visibilityState === 'visible') loadAll();
+  }, 60000);
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') loadAll();
+  });
 </script>
 </body>
 </html>
