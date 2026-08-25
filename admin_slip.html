@@ -382,6 +382,10 @@
   let activeTab = 'slips';
   let mailIframeLoaded = false;
   let attachedFiles = []; // ★ 添付ファイル管理
+  let isLoading = false;  // ★ 多重実行防止フラグ
+  let lastLoadTime = 0;   // ★ 直近の更新完了時刻（スロットル用）
+
+  function sleep(ms) { return new Promise(r => setTimeout(r, ms)); } // ★ リトライ待機用
 
   const TEMPLATES = [
     { needsAmount: false, body: `お振込みありがとうございました。\n配送させていただきます。` },
@@ -426,31 +430,46 @@
   window.addEventListener('resize', () => { if (activeTab === 'mail') adjustIframeHeight(); });
 
   // ===== データ読み込み =====
+  // ★ 多重実行防止：前回の読み込みが終わっていない間は新規実行しない
+  //   （タブ復帰・定期更新・手動リフレッシュが重なって同時多発リクエストになるのを防ぐ）
   async function loadAll() {
+    if (isLoading) return;
+    isLoading = true;
     const icon = document.getElementById('fetchIcon');
     icon.innerHTML = '<span class="spinner spinner-teal"></span>';
-    await Promise.all([loadData(), loadSms()]);
-    document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('en-GB');
-    icon.textContent = '↻';
+    try {
+      await Promise.all([loadData(), loadSms()]);
+      document.getElementById('lastUpdated').textContent = new Date().toLocaleTimeString('en-GB');
+    } finally {
+      icon.textContent = '↻';
+      isLoading = false;
+      lastLoadTime = Date.now();
+    }
   }
 
-  async function loadData() {
+  // ★ retry引数：通信失敗時に1.5秒待って1回だけ自動リトライしてからエラー表示
+  //   （GAS側の一時的な503/404はリトライで回復することが多いため）
+  async function loadData(retry = true) {
     try {
       const res = await fetch(GAS_URL + '?action=list');
       const json = await res.json();
       allData = json.data || [];
       updateStats();
       renderTable();
-    } catch(e) { showToast('Load error', true); }
+    } catch(e) {
+      if (retry) { await sleep(1500); return loadData(false); }
+      showToast('Load error', true);
+    }
   }
 
-  async function loadSms() {
+  async function loadSms(retry = true) {
     try {
       const res = await fetch(GAS_URL + '?action=smsList');
       const json = await res.json();
       allSmsData = json.data || [];
       renderSms();
     } catch(e) {
+      if (retry) { await sleep(1500); return loadSms(false); }
       document.getElementById('smsContent').innerHTML = '<div class="empty"><div class="empty-icon">⚠️</div><div>Load error</div></div>';
     }
   }
@@ -817,12 +836,14 @@
   // 複数タブ・複数端末で開きっぱなしになると、それぞれが独立して
   // 60秒ごとにGASへアクセスし続け、同時アクセスが積み重なって
   // GAS側の実行制限に触れやすくなるため、非表示タブでは更新を止める。
+  // ★ さらに、直前の更新から15秒以内のタブ復帰は間隔が近すぎるためスキップし、
+  //    intervalとvisibilitychangeの重複発火を防ぐ。
   loadAll();
   setInterval(() => {
     if (document.visibilityState === 'visible') loadAll();
   }, 60000);
   document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible') loadAll();
+    if (document.visibilityState === 'visible' && Date.now() - lastLoadTime > 15000) loadAll();
   });
 </script>
 </body>
