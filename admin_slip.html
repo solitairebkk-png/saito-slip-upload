@@ -373,6 +373,11 @@
 
 <script>
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbwhV5IKDbadgS7-nAEo8At2sc6KlFLhDUtckURVUNOUsuHZy76NZQF7LzKxRnOJ1gc/exec';
+  // list/smsList/updateStatus/readSlip/sendMail はスタッフ専用の操作のため、GAS側が
+  // これと同じ値をスクリプトプロパティ 'STAFF_TOKEN' に持っていないと処理を拒否する
+  // (このページ自体には今のところログインの仕組みが無いため、URLが漏れても
+  // このトークンを知らない限り顧客データの閲覧・メール送信ができないようにするための対策)。
+  const STAFF_TOKEN = 'vgEx6g6NymQai77pUBNZdD-mqaFzKNFZHngk19B7Gsw';
 
   let allData = [];
   let allSmsData = [];
@@ -451,7 +456,7 @@
   //   （GAS側の一時的な503/404はリトライで回復することが多いため）
   async function loadData(retry = true) {
     try {
-      const res = await fetch(GAS_URL + '?action=list');
+      const res = await fetch(GAS_URL + '?action=list&token=' + encodeURIComponent(STAFF_TOKEN));
       const json = await res.json();
       allData = json.data || [];
       updateStats();
@@ -464,7 +469,7 @@
 
   async function loadSms(retry = true) {
     try {
-      const res = await fetch(GAS_URL + '?action=smsList');
+      const res = await fetch(GAS_URL + '?action=smsList&token=' + encodeURIComponent(STAFF_TOKEN));
       const json = await res.json();
       allSmsData = json.data || [];
       renderSms();
@@ -577,7 +582,7 @@
   async function toggleStatus(row, newStatus, btn) {
     const tr = btn.closest('tr');
     try {
-      try { await fetch(`${GAS_URL}?action=updateStatus&row=${row}&status=${encodeURIComponent(newStatus)}`, { mode: 'no-cors' }); } catch(e) {}
+      try { await fetch(`${GAS_URL}?action=updateStatus&row=${row}&status=${encodeURIComponent(newStatus)}&token=${encodeURIComponent(STAFF_TOKEN)}`, { mode: 'no-cors' }); } catch(e) {}
       const d = allData.find(x => x.row === row);
       if (d) d.status = newStatus;
       const toggle = btn.closest('.status-toggle');
@@ -592,7 +597,7 @@
   async function quickRead(row, btn) {
     btn.disabled = true; btn.textContent = '...';
     try {
-      const res = await fetch(`${GAS_URL}?action=readSlip&row=${row}`);
+      const res = await fetch(`${GAS_URL}?action=readSlip&row=${row}&token=${encodeURIComponent(STAFF_TOKEN)}`);
       const json = await res.json();
       if (json.status === 'ok') {
         const d = allData.find(x => x.row === row);
@@ -707,7 +712,8 @@
         toEmail,
         toName: currentSlip ? currentSlip.name : '',
         body: fullBody,
-        attachments
+        attachments,
+        token: STAFF_TOKEN
       };
 
       const res = await fetch(GAS_URL, {
@@ -719,7 +725,7 @@
       if (json.status === 'ok') {
         // メール送信後に確認済みに更新
         const memo = document.getElementById('modalNote').value;
-        try { await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent('確認済み')}&memo=${encodeURIComponent(memo)}`, { mode: 'no-cors' }); } catch(e) {}
+        try { await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent('確認済み')}&memo=${encodeURIComponent(memo)}&token=${encodeURIComponent(STAFF_TOKEN)}`, { mode: 'no-cors' }); } catch(e) {}
         currentSlip.status = '確認済み'; currentSlip.memo = memo;
         closeModal();
         showToast('✉️ メール送信 & 確認済みに更新しました');
@@ -796,7 +802,7 @@
     btn.disabled = true;
     document.getElementById('readContent').innerHTML = '<span class="spinner spinner-teal"></span> Reading...';
     try {
-      const res = await fetch(`${GAS_URL}?action=readSlip&row=${currentSlip.row}`);
+      const res = await fetch(`${GAS_URL}?action=readSlip&row=${currentSlip.row}&token=${encodeURIComponent(STAFF_TOKEN)}`);
       const json = await res.json();
       if (json.status === 'ok') {
         document.getElementById('sAmount').textContent = json.amount || '---';
@@ -817,7 +823,7 @@
     if (!currentSlip) return;
     const memo = document.getElementById('modalNote').value;
     try {
-      try { await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent(currentStatus)}&memo=${encodeURIComponent(memo)}`, { mode: 'no-cors' }); } catch(e) {}
+      try { await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent(currentStatus)}&memo=${encodeURIComponent(memo)}&token=${encodeURIComponent(STAFF_TOKEN)}`, { mode: 'no-cors' }); } catch(e) {}
       currentSlip.status = currentStatus; currentSlip.memo = memo;
       closeModal(); showToast('Saved'); await loadData();
     } catch(e) { showToast('Save error', true); }
