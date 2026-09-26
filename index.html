@@ -412,6 +412,7 @@
 
   const params = new URLSearchParams(window.location.search);
   if (params.get('name')) document.getElementById('nameInput').value = decodeURIComponent(params.get('name'));
+  if (params.get('email')) document.getElementById('emailInput').value = decodeURIComponent(params.get('email'));
 
   // ═══════════════════════════════════════════════
   // PromptPay QR生成(EMVCo Merchant Presented QR仕様)
