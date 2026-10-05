@@ -572,7 +572,11 @@
     tbody.innerHTML = data.map(d => {
       const isPending = d.status === '未確認';
       const statusToggle = `<div class="status-toggle"><button class="status-toggle-btn pending ${isPending?'active':''}" onclick="event.stopPropagation();toggleStatus(${d.row},'未確認',this)">● Unconfirmed</button><button class="status-toggle-btn done ${!isPending?'active':''}" onclick="event.stopPropagation();toggleStatus(${d.row},'確認済み',this)">● Confirmed</button></div>`;
-      const name = `<div class="sender-name">${esc(d.name)||'(unknown)'}</div>`;
+      // 注文番号(UUID)が付いていないスリップは注文に自動で結び付かないため、直近14日分に目印を出す
+      const isUnlinked = !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(d.orderRef||'').trim())
+        && d.receivedAt && (Date.now() - new Date(d.receivedAt).getTime() < 14*86400000);
+      const unlinkedTag = isUnlinked ? `<div style="display:inline-block;margin-top:3px;padding:1px 7px;border-radius:5px;background:#fff1d6;color:#b45309;border:1px solid #f5c27a;font-size:10.5px;font-weight:700;">⚠ 注文未連携 / ไม่ผูกคำสั่งซื้อ</div>` : '';
+      const name = `<div class="sender-name">${esc(d.name)||'(unknown)'}</div>${unlinkedTag}`;
       const slip = d.amount
         ? `<div class="slip-row"><span class="slip-amount">${esc(d.amount)}</span><span class="slip-sep">|</span><span class="slip-name">${esc(d.slipName||'')}</span><button class="copy-btn" onclick="event.stopPropagation();copyText('${esc(d.amount)} | ${esc(d.slipDate||'')} | ${esc(d.slipName||'')}')">📋</button></div>`
         : `<button class="read-btn" onclick="event.stopPropagation();quickRead(${d.row},this)">🔍 Read / อ่าน</button>`;
