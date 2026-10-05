@@ -557,7 +557,9 @@
 
   document.querySelector('.search-input').addEventListener('input', function() { renderTable(this.value.toLowerCase()); });
 
-  function renderTable(search = '') {
+  function renderTable(search) {
+    // 引数なしで呼ばれた場合(自動更新・フィルタ切替・保存後など)も、検索欄の文字で必ず絞り込む
+    if (search === undefined) search = (document.querySelector('.search-input').value || '').toLowerCase();
     let data = allData;
     if (currentFilter !== 'all') data = data.filter(d => d.status === currentFilter);
     if (search) data = data.filter(d => (d.name||'').toLowerCase().includes(search) || (d.amount||'').toString().toLowerCase().includes(search));
