@@ -229,7 +229,7 @@
 
 <div class="tab-panel" id="panel-sms">
   <div class="sms-toolbar">
-    <span style="font-size:13px;color:var(--muted);">直近3日分のSCB入金通知 / SCB notifications (last 3 days)</span>
+    <span style="font-size:13px;color:var(--muted);">直近1週間分のSCB入金通知 / SCB notifications (last 7 days)</span>
     <span id="smsCount" style="font-size:13px;font-weight:600;color:var(--orange);margin-left:8px;"></span>
     <div class="sms-search-wrap" style="margin-left:16px;">
       <input type="number" id="smsSearch" class="sms-search-input" placeholder="🔍 ค้นหายอด / Search amount..." oninput="renderSms()">
@@ -542,7 +542,7 @@
     document.getElementById('statsBar').innerHTML = `
       <div class="stat-card pending"><div class="stat-num">${pending}</div><div class="stat-label">Unconfirmed / ยังไม่ยืนยัน</div></div>
       <div class="stat-card done"><div class="stat-num">${done}</div><div class="stat-label">Confirmed / ยืนยันแล้ว</div></div>
-      <div class="stat-card sms"><div class="stat-num" id="smsStatNum">${allSmsData.length || '—'}</div><div class="stat-label">SCB SMS (3 days)</div></div>`;
+      <div class="stat-card sms"><div class="stat-num" id="smsStatNum">${allSmsData.length || '—'}</div><div class="stat-label">SCB SMS (7 days)</div></div>`;
     const badge = document.getElementById('badge-slips');
     if (pending > 0) { badge.textContent = pending; badge.style.display = ''; } else badge.style.display = 'none';
     document.title = pending > 0 ? `(${pending}) Slip Management` : 'Slip Management';
