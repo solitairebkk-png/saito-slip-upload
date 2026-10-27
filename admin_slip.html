@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Slip Management | Saito Foods</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&family=Noto+Sans+Thai:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg: #f4f6fb; --surface: #ffffff; --surface2: #f0f2f7; --border: #e2e6ef;
@@ -172,6 +173,17 @@
   .toast { position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--ok); color: #fff; padding: 12px 24px; border-radius: 10px; font-size: 14px; font-weight: 600; z-index: 400; transition: transform 0.3s; white-space: nowrap; }
   .toast.show { transform: translateX(-50%) translateY(0); }
   .toast.error { background: var(--red); }
+  #loginOverlay { position: fixed; inset: 0; background: var(--bg); z-index: 1000; display: none; align-items: center; justify-content: center; padding: 16px; }
+  #loginOverlay.show { display: flex; }
+  .login-card { width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+  .login-card h2 { font-size: 16px; margin-bottom: 4px; }
+  .login-card .login-sub { font-size: 12px; color: var(--muted); margin-bottom: 16px; }
+  .login-card input { width: 100%; padding: 10px 12px; margin-bottom: 10px; border: 1px solid var(--border); border-radius: 8px; font-size: 14px; font-family: inherit; }
+  .login-card button { width: 100%; background: var(--teal); color: #fff; border: none; padding: 10px; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit; }
+  .login-card button:disabled { opacity: 0.6; cursor: default; }
+  #loginError { color: var(--red); font-size: 13px; min-height: 18px; margin-top: 8px; }
+  .btn-logout { background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 8px 14px; border-radius: 8px; font-size: 13px; cursor: pointer; font-family: inherit; }
+  .btn-logout:hover { color: var(--red); border-color: var(--red); }
 </style>
 </head>
 <body>
@@ -189,8 +201,20 @@
     <button class="btn-refresh" id="fetchBtn" onclick="loadAll()">
       <span id="fetchIcon">↻</span> Refresh / รีเฟรช
     </button>
+    <button class="btn-logout" onclick="logout()">Logout / ออกจากระบบ</button>
   </div>
 </header>
+
+<div id="loginOverlay">
+  <div class="login-card">
+    <h2>Staff Login / เข้าสู่ระบบพนักงาน</h2>
+    <div class="login-sub">Slip Management — Saito Foods</div>
+    <input type="email" id="loginEmail" placeholder="Email / อีเมล" autocomplete="username" onkeydown="if(event.key==='Enter')login()">
+    <input type="password" id="loginPassword" placeholder="Password / รหัสผ่าน" autocomplete="current-password" onkeydown="if(event.key==='Enter')login()">
+    <button id="loginBtn" onclick="login()">Login / เข้าสู่ระบบ</button>
+    <div id="loginError"></div>
+  </div>
+</div>
 
 <div class="stats-bar" id="statsBar"></div>
 
@@ -372,12 +396,52 @@
 <div class="toast" id="toast"></div>
 
 <script>
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbwhV5IKDbadgS7-nAEo8At2sc6KlFLhDUtckURVUNOUsuHZy76NZQF7LzKxRnOJ1gc/exec';
-  // list/smsList/updateStatus/readSlip/sendMail はスタッフ専用の操作のため、GAS側が
-  // これと同じ値をスクリプトプロパティ 'STAFF_TOKEN' に持っていないと処理を拒否する
-  // (このページ自体には今のところログインの仕組みが無いため、URLが漏れても
-  // このトークンを知らない限り顧客データの閲覧・メール送信ができないようにするための対策)。
-  const STAFF_TOKEN = 'vgEx6g6NymQai77pUBNZdD-mqaFzKNFZHngk19B7Gsw';
+  // All staff-only operations (list / smsList / updateStatus / readSlip / sendMail) go through the
+  // Supabase Edge Function "slip-admin", which checks the staff/admin login and adds the secret token.
+  // No token is stored in this page.
+  const SUPABASE_URL = 'https://sdjgmgyghnlpqydrnllj.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_GzbK9P2cp7FPFxrnyBjVug_IMCbjOpk';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let appStarted = false;
+
+  async function slipApi(action, params = {}) {
+    const { data, error } = await sb.functions.invoke('slip-admin', { body: { action, ...params } });
+    if (error) {
+      const code = error.context && error.context.status;
+      if (code === 401 || code === 403) showLogin(code === 403 ? 'This account has no access. / บัญชีนี้ไม่มีสิทธิ์เข้าใช้' : 'Please log in again. / กรุณาเข้าสู่ระบบอีกครั้ง');
+      throw error;
+    }
+    return data;
+  }
+
+  function showLogin(msg) {
+    document.getElementById('loginOverlay').classList.add('show');
+    document.getElementById('loginError').textContent = msg || '';
+  }
+
+  async function login() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const btn = document.getElementById('loginBtn');
+    if (!email || !password) { document.getElementById('loginError').textContent = 'Enter email and password / กรอกอีเมลและรหัสผ่าน'; return; }
+    btn.disabled = true;
+    document.getElementById('loginError').textContent = '';
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    btn.disabled = false;
+    if (error) { document.getElementById('loginError').textContent = 'Login failed / เข้าสู่ระบบไม่สำเร็จ'; return; }
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginOverlay').classList.remove('show');
+    startApp();
+    loadAll();
+  }
+
+  async function logout() {
+    await sb.auth.signOut();
+    allData = []; allSmsData = [];
+    document.getElementById('tableBody').innerHTML = '';
+    document.getElementById('smsContent').innerHTML = '';
+    showLogin('');
+  }
 
   let allData = [];
   let allSmsData = [];
@@ -456,8 +520,7 @@
   //   （GAS側の一時的な503/404はリトライで回復することが多いため）
   async function loadData(retry = true) {
     try {
-      const res = await fetch(GAS_URL + '?action=list&token=' + encodeURIComponent(STAFF_TOKEN));
-      const json = await res.json();
+      const json = await slipApi('list');
       allData = json.data || [];
       updateStats();
       renderTable();
@@ -469,8 +532,7 @@
 
   async function loadSms(retry = true) {
     try {
-      const res = await fetch(GAS_URL + '?action=smsList&token=' + encodeURIComponent(STAFF_TOKEN));
-      const json = await res.json();
+      const json = await slipApi('smsList');
       allSmsData = json.data || [];
       renderSms();
     } catch(e) {
@@ -588,7 +650,7 @@
   async function toggleStatus(row, newStatus, btn) {
     const tr = btn.closest('tr');
     try {
-      try { await fetch(`${GAS_URL}?action=updateStatus&row=${row}&status=${encodeURIComponent(newStatus)}&token=${encodeURIComponent(STAFF_TOKEN)}`, { mode: 'no-cors' }); } catch(e) {}
+      await slipApi('updateStatus', { row, status: newStatus });
       const d = allData.find(x => x.row === row);
       if (d) d.status = newStatus;
       const toggle = btn.closest('.status-toggle');
@@ -603,8 +665,7 @@
   async function quickRead(row, btn) {
     btn.disabled = true; btn.textContent = '...';
     try {
-      const res = await fetch(`${GAS_URL}?action=readSlip&row=${row}&token=${encodeURIComponent(STAFF_TOKEN)}`);
-      const json = await res.json();
+      const json = await slipApi('readSlip', { row });
       if (json.status === 'ok') {
         const d = allData.find(x => x.row === row);
         if (d) { d.amount = json.amount; d.slipDate = json.date; d.slipName = json.name; }
@@ -713,25 +774,17 @@
         fileData: await fileToBase64(f)
       })));
 
-      const payload = {
-        action: 'sendMail',
+      const json = await slipApi('sendMail', {
         toEmail,
         toName: currentSlip ? currentSlip.name : '',
         body: fullBody,
-        attachments,
-        token: STAFF_TOKEN
-      };
-
-      const res = await fetch(GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify(payload)
+        attachments
       });
-      const json = await res.json();
 
       if (json.status === 'ok') {
         // メール送信後に確認済みに更新
         const memo = document.getElementById('modalNote').value;
-        try { await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent('確認済み')}&memo=${encodeURIComponent(memo)}&token=${encodeURIComponent(STAFF_TOKEN)}`, { mode: 'no-cors' }); } catch(e) {}
+        try { await slipApi('updateStatus', { row: currentSlip.row, status: '確認済み', memo }); } catch(e) {}
         currentSlip.status = '確認済み'; currentSlip.memo = memo;
         closeModal();
         showToast('✉️ メール送信 & 確認済みに更新しました');
@@ -808,8 +861,7 @@
     btn.disabled = true;
     document.getElementById('readContent').innerHTML = '<span class="spinner spinner-teal"></span> Reading...';
     try {
-      const res = await fetch(`${GAS_URL}?action=readSlip&row=${currentSlip.row}&token=${encodeURIComponent(STAFF_TOKEN)}`);
-      const json = await res.json();
+      const json = await slipApi('readSlip', { row: currentSlip.row });
       if (json.status === 'ok') {
         document.getElementById('sAmount').textContent = json.amount || '---';
         document.getElementById('sDate').textContent = json.date || '---';
@@ -829,7 +881,7 @@
     if (!currentSlip) return;
     const memo = document.getElementById('modalNote').value;
     try {
-      try { await fetch(`${GAS_URL}?action=updateStatus&row=${currentSlip.row}&status=${encodeURIComponent(currentStatus)}&memo=${encodeURIComponent(memo)}&token=${encodeURIComponent(STAFF_TOKEN)}`, { mode: 'no-cors' }); } catch(e) {}
+      await slipApi('updateStatus', { row: currentSlip.row, status: currentStatus, memo });
       currentSlip.status = currentStatus; currentSlip.memo = memo;
       closeModal(); showToast('Saved'); await loadData();
     } catch(e) { showToast('Save error', true); }
@@ -850,13 +902,23 @@
   // GAS側の実行制限に触れやすくなるため、非表示タブでは更新を止める。
   // ★ さらに、直前の更新から15秒以内のタブ復帰は間隔が近すぎるためスキップし、
   //    intervalとvisibilitychangeの重複発火を防ぐ。
-  loadAll();
-  setInterval(() => {
-    if (document.visibilityState === 'visible') loadAll();
-  }, 60000);
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && Date.now() - lastLoadTime > 15000) loadAll();
-  });
+  function startApp() {
+    if (appStarted) return;
+    appStarted = true;
+    setInterval(() => {
+      if (document.visibilityState === 'visible') loadAll();
+    }, 60000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && Date.now() - lastLoadTime > 15000) loadAll();
+    });
+  }
+
+  (async function init() {
+    const { data: { session } } = await sb.auth.getSession();
+    if (!session) { showLogin(''); return; }
+    startApp();
+    loadAll();
+  })();
 </script>
 </body>
 </html>
