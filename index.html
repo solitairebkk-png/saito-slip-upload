@@ -410,9 +410,16 @@
     setTimeout(() => URL.revokeObjectURL(url), 60000);
   }
 
+  // メールアドレスに混ざった余計な文字(「コピー」等のボタン文字・全角文字・空白)を取り除き、アドレス部分だけ返す
+  function cleanEmail(s) {
+    const str = String(s || '').trim();
+    const m = str.match(/[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,}/);
+    return m ? m[0] : str;
+  }
+
   const params = new URLSearchParams(window.location.search);
   if (params.get('name')) document.getElementById('nameInput').value = decodeURIComponent(params.get('name'));
-  if (params.get('email')) document.getElementById('emailInput').value = decodeURIComponent(params.get('email'));
+  if (params.get('email')) document.getElementById('emailInput').value = cleanEmail(decodeURIComponent(params.get('email')));
 
   // ═══════════════════════════════════════════════
   // PromptPay QR生成(EMVCo Merchant Presented QR仕様)
@@ -562,7 +569,8 @@
     const t = LANG[currentLang];
     document.getElementById('errorMsg').style.display = 'none';
     const name = document.getElementById('nameInput').value.trim();
-    const email = document.getElementById('emailInput').value.trim();
+    const email = cleanEmail(document.getElementById('emailInput').value);
+    document.getElementById('emailInput').value = email;
     if (!name) { showError(t['err-name']); return; }
     if (!email) { showError(t['err-email']); return; }
     if (!selectedFile) { showError(t['err-file']); return; }

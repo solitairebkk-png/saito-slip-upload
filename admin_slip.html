@@ -747,9 +747,16 @@
     });
   }
 
+  // メールアドレスに混ざった余計な文字(「コピー」等のボタン文字・全角文字・空白)を取り除き、アドレス部分だけ返す
+  function cleanEmail(s) {
+    const str = String(s || '').trim();
+    const m = str.match(/[A-Za-z0-9._%+\-]+@[A-Za-z0-9\-]+(?:\.[A-Za-z0-9\-]+)*\.[A-Za-z]{2,}/);
+    return m ? m[0] : str;
+  }
+
   // ===== メール送信（POST） =====
   async function sendMail() {
-    const toEmail = document.getElementById('mailTo').value.trim();
+    const toEmail = cleanEmail(document.getElementById('mailTo').value);
     if (!toEmail) { showToast('送信先メールアドレスを入力してください', true); return; }
     const fullBody = document.getElementById('mailPreview').value.trim();
     if (!fullBody) { showToast('送信内容を入力してください', true); return; }
@@ -818,13 +825,13 @@
     document.getElementById('mDate').textContent = formatDate(d.receivedAt);
     document.getElementById('mLang').textContent = d.lang || '-';
     document.getElementById('mRef').textContent = d.orderRef || '-';
-    document.getElementById('mEmail').textContent = d.email || '-';
+    document.getElementById('mEmail').textContent = cleanEmail(d.email) || '-';
     document.getElementById('sAmount').textContent = d.amount || '---';
     document.getElementById('sDate').textContent = d.slipDate || '---';
     document.getElementById('sName').textContent = d.slipName || '---';
     document.getElementById('slipImg').src = driveImageUrl(d.driveUrl);
     document.getElementById('modalNote').value = d.memo || '';
-    document.getElementById('mailTo').value = d.email || '';
+    document.getElementById('mailTo').value = cleanEmail(d.email);
     const rawAmt = String(d.amount || '').replace(/[^0-9.]/g, '');
     document.getElementById('slipAmountInput').value = rawAmt || '';
     document.getElementById('chargeAmountInput').value = '';
